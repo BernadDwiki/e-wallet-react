@@ -1,5 +1,13 @@
 import React from 'react';
 
+/**
+ * Item transaksi yang dapat digunakan ulang dalam daftar transaksi.
+ *
+ * @param {object} props
+ * @param {{ id: number, name: string, type: string, amount: string, positive: boolean, avatar: string }} props.transaction
+ *   Objek transaksi yang berisi detail nama, jenis, jumlah, dan avatar.
+ * @returns {JSX.Element} Komponen TransactionItem.
+ */
 const TransactionItem = ({ transaction }) => {
   return (
     <div className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">

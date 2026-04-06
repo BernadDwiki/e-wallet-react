@@ -9,6 +9,14 @@ const ASSETS = {
   logout: "./assets/Log Out.png",
 };
 
+/**
+ * Sidebar navigasi yang digunakan pada dashboard.
+ *
+ * @param {object} props
+ * @param {function} props.onLogout - Callback saat tombol logout diklik.
+ * @returns {JSX.Element} Komponen Sidebar.
+ */
+
 const NAV_ITEMS = [
   { label: "Dashboard", icon: ASSETS.dashboard, href: "/dashboard", danger: false },
   { label: "Transfer", icon: ASSETS.send, href: "/transfer", danger: false },
