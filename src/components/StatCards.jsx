@@ -17,7 +17,7 @@ export default function StatCards() {
   return (
     <div className="grid grid-cols-3 gap-3.5">
       {STAT_CARDS.map((card) => (
-        <div key={card.label} className="bg-white rounded-[14px] border border-gray-200 p-5">
+        <div key={card.label} className="card-white">
           <div className="flex items-center gap-2 mb-2.5">
             <img src={card.icon} alt={card.label} className="w-5 h-5 object-contain" />
             <span className="text-[13px] text-gray-500 font-medium">{card.label}</span>

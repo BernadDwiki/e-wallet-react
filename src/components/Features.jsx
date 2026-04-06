@@ -50,7 +50,7 @@ const Features = () => (
           </div>
         ))}
       </div>
-      <button className="w-full md:w-auto bg-white text-[#4a6cf7] border-none rounded-lg px-7 py-[14px] text-sm font-bold cursor-pointer hover:opacity-90 transition-opacity">
+      <button className="btn-secondary w-full md:w-auto px-7 py-[14px] text-sm">
         Get Started
       </button>
     </div>

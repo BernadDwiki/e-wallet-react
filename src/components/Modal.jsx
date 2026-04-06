@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 
 /**
- * Reusable modal component with backdrop and keyboard support.
- * Supports optional title, content, and footer sections.
+ * Komponen modal yang dapat digunakan ulang dengan backdrop dan dukungan keyboard.
+ * Mendukung bagian judul, konten, dan footer yang opsional.
  *
- * @param {boolean} isOpen - Whether the modal is visible.
- * @param {function} onClose - Function to call when closing the modal.
- * @param {string} [title] - Optional title for the modal header.
- * @param {JSX.Element} children - Content to display inside the modal.
- * @param {JSX.Element} [footer] - Optional footer content with buttons.
- * @returns {JSX.Element|null} The modal component or null if not open.
+ * @param {boolean} isOpen - Apakah modal terlihat.
+ * @param {function} onClose - Fungsi yang dipanggil saat menutup modal.
+ * @param {string} [title] - Judul opsional untuk header modal.
+ * @param {JSX.Element} children - Konten yang ditampilkan di dalam modal.
+ * @param {JSX.Element} [footer] - Konten footer opsional dengan tombol atau elemen interaktif lainnya.
+ * @returns {JSX.Element} Komponen modal atau fragment kosong jika tidak terbuka.
  */
 const Modal = ({ isOpen, onClose, title, children, footer }) => {
   useEffect(() => {
@@ -28,7 +28,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) return <></>;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

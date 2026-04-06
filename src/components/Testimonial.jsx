@@ -17,6 +17,7 @@ const testimonialData = [
     quote: "Since I'm using this app, I'm not going to move to another similar app. Thank you Zwallet!",
   },
 ];
+//ditambah kompoen yang kecil kaya card
 
 const Testimonial = () => {
   const [offset, setOffset] = useState(0);

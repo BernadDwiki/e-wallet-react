@@ -70,7 +70,7 @@ export default function Dashboard() {
         >
           {/* Sidebar */}
           <div style={{ gridArea: "sidebar" }}>
-            <Sidebar />
+            <Sidebar onLogout={handleLogout} />
           </div>
 
           {/* Main Content */}

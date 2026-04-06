@@ -77,7 +77,7 @@ const ASSETS = {
 
 export default function ChartCard() {
   return (
-    <div className="bg-white rounded-[14px] border border-gray-200 p-5">
+    <div className="card-white">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <span className="text-[15px] font-bold">Income Chart</span>
         <div className="flex gap-2">

@@ -103,7 +103,7 @@ export default function RegisterPage() {
         <section className="w-1/2 bg-white px-16 py-8 flex flex-col justify-center rounded-tr-[40px] rounded-br-[40px]">
 
           {/* Logo */}
-          <h4 className="flex items-center gap-2 text-[#4a6cf7] font-bold text-sm mb-2">
+          <h4 className="text-secondary flex items-center gap-2 font-bold text-sm mb-2">
             <img src="./assets/dompet1.png" alt="" className="w-7 h-7" />
             <span>E-Wallet</span>
           </h4>
@@ -122,7 +122,7 @@ export default function RegisterPage() {
           </p>
 
           {/* Google Button */}
-          <button className="flex items-center justify-center gap-2 w-full px-4 py-2.5 mb-2 rounded-[20px] border border-gray-200 bg-white cursor-pointer text-sm hover:bg-gray-50 transition-colors">
+          <button className="btn-social mb-2">
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/3840px-Google_%22G%22_logo.svg.png"
               alt="Google"
@@ -132,7 +132,7 @@ export default function RegisterPage() {
           </button>
 
           {/* Facebook Button */}
-          <button className="flex items-center justify-center gap-2 w-full px-4 py-2.5 mb-2 rounded-[20px] border border-gray-200 bg-white cursor-pointer text-sm hover:bg-gray-50 transition-colors">
+          <button className="btn-social mb-2">
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Facebook_f_logo_%282019%29.svg/1280px-Facebook_f_logo_%282019%29.svg.png"
               alt="Facebook"
@@ -232,7 +232,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2.5 mt-1 bg-[#4a6cf7] text-white border-none rounded-md cursor-pointer hover:bg-[#3a5ce6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Registering..." : "Register"}
             </button>
@@ -240,7 +240,7 @@ export default function RegisterPage() {
 
           <p className="text-center mt-3 text-sm">
             Have An Account?{" "}
-            <a href="/login" className="text-[#4a6cf7] no-underline hover:underline">
+            <a href="/login" className="text-secondary no-underline hover:underline">
               Login
             </a>
           </p>

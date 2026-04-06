@@ -82,19 +82,5 @@ export const authStorage = {
   // Check if user is logged in
   isLoggedIn: () => {
     return !!localStorage.getItem('currentUser');
-  },
-
-  // Reset password (for forgot password functionality)
-  resetPassword: (email, newPassword) => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const userIndex = users.findIndex(user => user.email === email);
-
-    if (userIndex === -1) {
-      throw new Error('User not found');
-    }
-
-    users[userIndex].password = newPassword;
-    localStorage.setItem('users', JSON.stringify(users));
-    return true;
   }
 };

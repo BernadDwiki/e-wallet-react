@@ -94,7 +94,7 @@ export default function LoginPage() {
         <section className="w-1/2 bg-white px-20 py-16 flex flex-col justify-center rounded-tr-[40px] rounded-br-[40px] max-[768px]:w-full max-[768px]:rounded-none max-[768px]:px-6 max-[768px]:py-8">
 
           {/* Logo */}
-          <h4 className="text-[#4a6cf7] flex items-center gap-2 font-bold mb-4">
+          <h4 className="text-secondary flex items-center gap-2 font-bold mb-4">
             <img src="./assets/dompet1.png" alt="E-Wallet Logo" className="w-7 h-7" />
             E-Wallet
           </h4>
@@ -110,7 +110,7 @@ export default function LoginPage() {
           </p>
 
           {/* Google Button */}
-          <button className="flex items-center justify-center gap-2.5 w-full px-4 py-3 rounded-[20px] border border-gray-200 bg-white cursor-pointer mb-2.5 hover:bg-gray-50 transition-colors max-[480px]:text-sm max-[480px]:py-2.5">
+          <button className="btn-social mb-2.5 max-[480px]:text-sm max-[480px]:py-2.5">
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/3840px-Google_%22G%22_logo.svg.png"
               alt="Google"
@@ -120,7 +120,7 @@ export default function LoginPage() {
           </button>
 
           {/* Facebook Button */}
-          <button className="flex items-center justify-center gap-2.5 w-full px-4 py-3 rounded-[20px] border border-gray-200 bg-white cursor-pointer mb-2.5 hover:bg-gray-50 transition-colors max-[480px]:text-sm max-[480px]:py-2.5">
+          <button className="btn-social mb-2.5 max-[480px]:text-sm max-[480px]:py-2.5">
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Facebook_f_logo_%282019%29.svg/1280px-Facebook_f_logo_%282019%29.svg.png"
               alt="Facebook"
@@ -196,7 +196,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-[#4a6cf7] text-white font-bold rounded-lg hover:bg-[#3a5ce6] active:bg-[#2d46c0] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed max-[480px]:text-sm max-[480px]:py-2.5"
+              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Logging in..." : "Login"}
             </button>
@@ -205,17 +205,11 @@ export default function LoginPage() {
           {/* Register Link */}
           <p className="text-center mt-4 text-sm text-gray-600">
             Not Have An Account?{" "}
-            <a href="/register" className="text-[#4a6cf7] no-underline hover:underline font-medium">
+            <a href="/register" className="text-secondary no-underline hover:underline font-medium">
               Register
             </a>
           </p>
 
-          {/* Forgot Password Link */}
-          <p className="text-center mt-2 text-sm text-gray-600">
-            <a href="/forgot-password" className="text-[#4a6cf7] no-underline hover:underline">
-              Forgot Password?
-            </a>
-          </p>
         </section>
 
         {/* RIGHT SIDE */}

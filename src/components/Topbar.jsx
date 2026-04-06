@@ -7,11 +7,11 @@ const ASSETS = {
 };
 
 /**
- * Top navigation bar component with logo, user menu, and logout functionality.
+ * Komponen bar navigasi atas dengan logo, menu pengguna, dan fungsi logout.
  *
- * @param {object} currentUser - The current logged-in user object.
- * @param {function} onLogout - Function to call when user logs out.
- * @returns {JSX.Element} The topbar component.
+ * @param {object} currentUser - Objek pengguna yang sedang login.
+ * @param {function} onLogout - Fungsi yang dipanggil saat pengguna logout.
+ * @returns {JSX.Element} Komponen topbar.
  */
 export default function Topbar({ currentUser, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
