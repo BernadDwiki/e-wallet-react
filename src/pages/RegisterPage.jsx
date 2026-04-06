@@ -1,0 +1,279 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { validateEmail, validatePassword, validateConfirmPassword, authStorage } from "../utils/validation";
+import Modal from "../components/Modal";
+
+export default function RegisterPage() {
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "error"
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    const emailError = validateEmail(formData.email);
+    if (emailError) newErrors.email = emailError;
+
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) newErrors.password = passwordError;
+
+    const confirmError = validateConfirmPassword(formData.password, formData.confirmPassword);
+    if (confirmError) newErrors.confirmPassword = confirmError;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    try {
+      // Fake registration using localStorage
+      const newUser = authStorage.register({
+        email: formData.email,
+        password: formData.password,
+        name: formData.email.split('@')[0] // Simple name extraction
+      });
+
+      setModal({
+        isOpen: true,
+        title: "Registration Successful!",
+        message: `Welcome ${newUser.name}! Your account has been created successfully.`,
+        type: "success"
+      });
+
+      // Redirect to login after successful registration
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+
+    } catch (err) {
+      setModal({
+        isOpen: true,
+        title: "Registration Failed",
+        message: err.message,
+        type: "error"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }));
+  };
+
+  return (
+    <>
+      <main className="flex h-screen bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
+        {/* LEFT SIDE */}
+        <section className="w-1/2 bg-white px-16 py-8 flex flex-col justify-center rounded-tr-[40px] rounded-br-[40px]">
+
+          {/* Logo */}
+          <h4 className="flex items-center gap-2 text-[#4a6cf7] font-bold text-sm mb-2">
+            <img src="./assets/dompet1.png" alt="" className="w-7 h-7" />
+            <span>E-Wallet</span>
+          </h4>
+
+          {/* Heading */}
+          <h1 className="text-xl font-bold mb-2 leading-snug">
+            Start Accessing Banking Needs With All Devices and All Platforms With
+            30.000+ Users
+          </h1>
+
+          {/* Description */}
+          <p className="text-gray-500 mb-3 text-xs leading-relaxed">
+            Transfering money is eassier than ever, you can access Zwallet
+            wherever you are. Desktop, laptop, mobile phone? we cover all of that
+            for you!
+          </p>
+
+          {/* Google Button */}
+          <button className="flex items-center justify-center gap-2 w-full px-4 py-2.5 mb-2 rounded-[20px] border border-gray-200 bg-white cursor-pointer text-sm hover:bg-gray-50 transition-colors">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/3840px-Google_%22G%22_logo.svg.png"
+              alt="Google"
+              className="w-5 h-5"
+            />
+            Sign In With Google
+          </button>
+
+          {/* Facebook Button */}
+          <button className="flex items-center justify-center gap-2 w-full px-4 py-2.5 mb-2 rounded-[20px] border border-gray-200 bg-white cursor-pointer text-sm hover:bg-gray-50 transition-colors">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Facebook_f_logo_%282019%29.svg/1280px-Facebook_f_logo_%282019%29.svg.png"
+              alt="Facebook"
+              className="w-5 h-5"
+            />
+            Sign In With Facebook
+          </button>
+
+          {/* Divider */}
+          <div className="flex items-center my-3 text-gray-400 gap-4">
+            <hr className="flex-1 border-none h-px bg-[#dedede]" />
+            <span className="text-sm">or</span>
+            <hr className="flex-1 border-none h-px bg-[#dedede]" />
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleRegister}>
+
+            {/* Email */}
+            <label htmlFor="email" className="block text-sm mb-0.5">Email</label>
+            <div className="relative w-full mb-2.5">
+              <img
+                src="./assets/mail.png"
+                alt="Email Icon"
+                className="absolute left-2.5 top-[50%] -translate-y-1/2 mt-1 w-5 h-5"
+              />
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter Your Email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`w-full mt-2 px-9 py-2.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4a6cf7] focus:border-transparent transition-all ${
+                  errors.email ? 'border-red-500' : 'border-gray-200'
+                }`}
+              />
+            </div>
+            {errors.email && <p className="text-red-500 text-xs mb-2">{errors.email}</p>}
+
+            {/* Password */}
+            <label htmlFor="password" className="block text-sm mb-0.5">Password</label>
+            <div className="relative w-full mb-2.5">
+              <img
+                src="./assets/Password.png"
+                alt="Password Icon"
+                className="absolute left-2.5 top-[50%] -translate-y-1/2 mt-1 w-5 h-5"
+              />
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                placeholder="Enter Your Password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`w-full mt-2 px-9 py-2.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4a6cf7] focus:border-transparent transition-all ${
+                  errors.password ? 'border-red-500' : 'border-gray-200'
+                }`}
+              />
+              <img
+                src="./assets/EyeSlash.png"
+                alt="Toggle Password"
+                className="absolute right-2.5 top-[50%] -translate-y-1/2 mt-1 w-5 h-5 cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+              />
+            </div>
+            {errors.password && <p className="text-red-500 text-xs mb-2">{errors.password}</p>}
+
+            {/* Confirm Password */}
+            <label htmlFor="confirmPassword" className="block text-sm mb-0.5">Confirm Password</label>
+            <div className="relative w-full mb-2.5">
+              <img
+                src="./assets/Password.png"
+                alt="Password Icon"
+                className="absolute left-2.5 top-[50%] -translate-y-1/2 mt-1 w-5 h-5"
+              />
+              <input
+                type={showConfirm ? "text" : "password"}
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="Enter Your Password Again"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                className={`w-full mt-2 px-9 py-2.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4a6cf7] focus:border-transparent transition-all ${
+                  errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
+                }`}
+              />
+              <img
+                src="./assets/EyeSlash.png"
+                alt="Toggle Confirm Password"
+                className="absolute right-2.5 top-[50%] -translate-y-1/2 mt-1 w-5 h-5 cursor-pointer"
+                onClick={() => setShowConfirm(!showConfirm)}
+              />
+            </div>
+            {errors.confirmPassword && <p className="text-red-500 text-xs mb-2">{errors.confirmPassword}</p>}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-2.5 mt-1 bg-[#4a6cf7] text-white border-none rounded-md cursor-pointer hover:bg-[#3a5ce6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Registering..." : "Register"}
+            </button>
+          </form>
+
+          <p className="text-center mt-3 text-sm">
+            Have An Account?{" "}
+            <a href="/login" className="text-[#4a6cf7] no-underline hover:underline">
+              Login
+            </a>
+          </p>
+        </section>
+
+        {/* RIGHT SIDE */}
+        <section className="w-1/2 flex justify-center items-center">
+          <img src="./assets/wallet.png" alt="wallet" className="w-[550px] max-w-full" />
+        </section>
+      </main>
+
+      {/* Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+      >
+        <div className={`p-4 rounded-lg ${
+          modal.type === 'success' ? 'bg-green-50 text-green-800' :
+          modal.type === 'error' ? 'bg-red-50 text-red-800' :
+          'bg-blue-50 text-blue-800'
+        }`}>
+          <p className="text-center">{modal.message}</p>
+        </div>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={closeModal}
+            className="px-4 py-2 bg-[#4a6cf7] text-white rounded-lg hover:bg-[#3a5ce6] transition-colors"
+          >
+            OK
+          </button>
+        </div>
+      </Modal>
+    </>
+  );
+}
