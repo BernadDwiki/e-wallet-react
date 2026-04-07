@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Card from "./Card";
 
 const testimonialData = [
   {
@@ -42,15 +43,18 @@ const Testimonial = () => {
         </button>
         <div className="flex justify-center gap-[30px] overflow-hidden">
           {visible.map((t, i) => (
-            <div
+            <Card
               key={i}
-              className="flex flex-col justify-center items-center w-fit md:w-[260px] bg-[#f7f7f7] p-[30px] rounded-[10px] shrink-0 text-left"
+              bgColor="bg-[#f7f7f7]"
+              borderRadius="rounded-[10px]"
+              padding="p-[30px]"
+              className="flex flex-col justify-center items-center w-fit md:w-[260px] shrink-0 text-left"
             >
               <img src={t.img} className="w-[60px] h-[60px] rounded-full mb-[10px]" />
               <h4>{t.name}</h4>
               <div className="text-orange-400 my-[10px]">★★★★★ 5.0</div>
               <p className="text-sm text-[#555]">"{t.quote}"</p>
-            </div>
+            </Card>
           ))}
         </div>
         <button

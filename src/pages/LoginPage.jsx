@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { validateEmail, validatePassword, authStorage } from "../utils/validation";
+import { validateLoginForm, authStorage } from "../utils/validation";
 import Modal from "../components/Modal";
 
 export default function LoginPage() {
@@ -26,24 +26,16 @@ export default function LoginPage() {
       [name]: value
     }));
 
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ""
-      }));
-    }
+    // Real-time validation
+    const newErrors = validateLoginForm({
+      ...formData,
+      [name]: value
+    });
+    setErrors(newErrors);
   };
 
   const validateForm = () => {
-    const newErrors = {};
-
-    const emailError = validateEmail(formData.email);
-    if (emailError) newErrors.email = emailError;
-
-    const passwordError = validatePassword(formData.password);
-    if (passwordError) newErrors.password = passwordError;
-
+    const newErrors = validateLoginForm(formData);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

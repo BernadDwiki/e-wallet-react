@@ -1,3 +1,5 @@
+import Card from './Card';
+
 const aboutCards = [
   {
     icon: "./assets/Headphones.png",
@@ -26,16 +28,19 @@ const About = () => (
     </div>
     <div className="flex flex-col md:flex-row justify-center gap-[30px] mt-10">
       {aboutCards.map((card) => (
-        <div
+        <Card
           key={card.title}
-          className="bg-[#4a6cf7] text-white px-[30px] pt-[45px] pb-[30px] h-auto md:h-[300px] w-full md:w-[220px] rounded-[10px] text-center"
+          bgColor="bg-[#4a6cf7]"
+          borderRadius="rounded-[10px]"
+          padding="pt-[45px] px-[30px] pb-[30px]"
+          className="border-none text-white h-auto md:h-[300px] w-full md:w-[220px] text-center"
         >
           <div className="w-[60px] h-[60px] rounded-full bg-white flex items-center justify-center mx-auto mb-5">
             <img src={card.icon} alt="" className="w-[26px] h-[26px]" />
           </div>
           <h3 className="pb-10">{card.title}</h3>
           <p className="text-sm text-white/80">{card.desc}</p>
-        </div>
+        </Card>
       ))}
     </div>
   </section>

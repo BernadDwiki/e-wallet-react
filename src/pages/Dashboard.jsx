@@ -59,49 +59,33 @@ export default function Dashboard() {
         <Topbar currentUser={currentUser} onLogout={handleLogout} />
 
         <div
-          className="grid"
-          style={{
-            gridTemplateRows: "1fr",
-            gridTemplateColumns: "196px 1fr",
-            gridTemplateAreas: '"sidebar main"',
-            minHeight: "calc(100vh - 64px)",
-            marginTop: "64px",
-          }}
+          className="grid grid-cols-1 md:grid-cols-[196px_1fr] min-h-[calc(100vh-64px)] mt-[64px]"
         >
           {/* Sidebar */}
-          <div style={{ gridArea: "sidebar" }}>
+          <div className="hidden md:block">
             <Sidebar onLogout={handleLogout} />
           </div>
 
           {/* Main Content */}
-          <main
-            style={{
-              gridArea: "main",
-              padding: "24px 24px 24px 20px",
-              display: "grid",
-              gridTemplateColumns: "1fr 280px",
-              gridTemplateRows: "auto auto 1fr",
-              gap: "16px",
-              alignItems: "start",
-            }}
-          >
+          <main className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4 p-4 md:p-6">
+
             {/* Stat Cards — col 1 row 1 */}
-            <div style={{ gridColumn: 1, gridRow: 1 }}>
+            <div className="lg:col-start-1 lg:row-start-1">
               <StatCards />
             </div>
 
             {/* Fast Service — col 1 row 2 */}
-            <div style={{ gridColumn: 1, gridRow: 2 }}>
+            <div className="lg:col-start-1 lg:row-start-2">
               <FastService />
             </div>
 
             {/* Chart — col 1 row 3 */}
-            <div style={{ gridColumn: 1, gridRow: 3 }}>
+            <div className="lg:col-start-1 lg:row-start-3">
               <ChartCard />
             </div>
 
             {/* Transaction History — col 2 rows 1-3 */}
-            <div style={{ gridColumn: 2, gridRow: "1 / 4" }}>
+            <div className="lg:col-start-2 lg:row-start-1 lg:row-span-3">
               <TransactionHistory />
             </div>
           </main>

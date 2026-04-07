@@ -18,7 +18,7 @@ const featureItems = [
 
 const Features = () => (
   <section
-    className="flex flex-col md:flex-row items-center gap-0 md:gap-[250px] px-5 md:px-[200px] py-[50px] md:py-[170px] mt-[120px] md:mt-0"
+    className="flex flex-col md:flex-row items-center md:items-start gap-10 md:gap-[250px] px-5 md:px-[200px] py-[50px] md:py-[170px] mt-[120px] md:mt-0"
     style={{
       backgroundImage: 'url("../assets/_8761_Vector__7813_Vector1.jpeg")',
       backgroundSize: "cover",
@@ -26,13 +26,13 @@ const Features = () => (
       backgroundRepeat: "no-repeat",
     }}
   >
-    <div className="relative bottom-0 md:bottom-[50px]">
+    <div className="relative bottom-0 md:bottom-[50px] flex justify-center md:justify-start w-full md:w-auto">
       <img
         src="./assets/mobile-dashboard.png"
-        className="w-[200px] md:w-[300px] rounded-[20px]"
+        className="w-[220px] md:w-[300px] rounded-[20px]"
       />
     </div>
-    <div className="text-white relative w-full md:w-auto md:top-[50px] -translate-y-[120px] md:translate-y-0">
+    <div className="text-white relative w-full md:w-auto md:top-[50px] translate-y-0 md:translate-y-0 mt-6 md:mt-0">
       <h2 className="text-[35px] font-normal mb-[30px]">All The Great Zwallet Features.</h2>
       <p className="text-[15px] text-white/80 mb-8 leading-relaxed">
         We have some great features from the application and it's totally free to use by all users around the world.
