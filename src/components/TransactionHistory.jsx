@@ -1,4 +1,3 @@
-import Card from './Card';
 import TransactionItem from './TransactionItem';
 
 const TRANSACTIONS = [
@@ -14,23 +13,19 @@ const TRANSACTIONS = [
 
 export default function TransactionHistory() {
   return (
-    <Card
-      className="overflow-hidden shadow-sm"
-      borderRadius="rounded-[24px]"
-      padding="p-0"
-    >
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+    <div className="overflow-hidden shadow-sm rounded-[24px] border border-gray-200">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-white">
         <h2 className="text-base font-bold text-gray-900">Transaction History</h2>
         <a href="/history-transaction" className="text-sm text-primary font-semibold hover:underline">
           See All
         </a>
       </div>
 
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200 bg-white">
         {TRANSACTIONS.map((transaction) => (
           <TransactionItem key={transaction.id} transaction={transaction} />
         ))}
       </div>
-    </Card>
+    </div>
   );
 }

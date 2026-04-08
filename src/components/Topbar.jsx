@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 
 const ASSETS = {
   logo: "./assets/dompet1.png",
@@ -17,18 +17,6 @@ const ASSETS = {
  */
 export default function Topbar({ currentUser, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const wrapperRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   return (
     <header className="bg-white border-b border-gray-200 flex items-center justify-between px-7 h-16 fixed top-0 left-0 right-0 z-50 shadow-sm">
@@ -37,7 +25,7 @@ export default function Topbar({ currentUser, onLogout }) {
         E-Wallet
       </div>
 
-      <div className="relative" ref={wrapperRef}>
+      <div className="relative">
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}

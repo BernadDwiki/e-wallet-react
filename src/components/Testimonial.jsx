@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Card from "./Card";
 
 const testimonialData = [
@@ -18,15 +17,9 @@ const testimonialData = [
     quote: "Since I'm using this app, I'm not going to move to another similar app. Thank you Zwallet!",
   },
 ];
-//ditambah kompoen yang kecil kaya card
 
 const Testimonial = () => {
-  const [offset, setOffset] = useState(0);
-  const slide = (dir) =>
-    setOffset((o) => (o + dir + testimonialData.length) % testimonialData.length);
-  const visible = [0, 1, 2].map(
-    (i) => testimonialData[(offset + i) % testimonialData.length]
-  );
+  const visible = testimonialData.slice(0, 3);
 
   return (
     <section className="px-10 py-20 text-center">
@@ -37,7 +30,6 @@ const Testimonial = () => {
       <div className="flex items-center justify-center gap-4">
         <button
           className="w-11 h-11 rounded-full border-none bg-transparent cursor-pointer flex items-center justify-center shrink-0 p-0 hover:opacity-80 hover:scale-105 transition-all"
-          onClick={() => slide(-1)}
         >
           <img src="./assets/arrow-prev.png" alt="prev" className="w-11 h-11 object-contain" />
         </button>
@@ -59,7 +51,6 @@ const Testimonial = () => {
         </div>
         <button
           className="w-11 h-11 rounded-full border-none bg-transparent cursor-pointer flex items-center justify-center shrink-0 p-0 hover:opacity-80 hover:scale-105 transition-all"
-          onClick={() => slide(1)}
         >
           <img src="./assets/Group 1304.png" alt="next" className="w-11 h-11 object-contain" />
         </button>

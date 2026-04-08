@@ -11,7 +11,6 @@ export default function LoginPage() {
     password: ""
   });
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
@@ -45,8 +44,6 @@ export default function LoginPage() {
 
     if (!validateForm()) return;
 
-    setIsLoading(true);
-
     try {
       // Fake authentication using localStorage
       const user = authStorage.login(formData.email, formData.password);
@@ -70,8 +67,6 @@ export default function LoginPage() {
         message: err.message,
         type: "error"
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -86,7 +81,7 @@ export default function LoginPage() {
         <section className="w-1/2 bg-white px-20 py-16 flex flex-col justify-center rounded-tr-[40px] rounded-br-[40px] max-[768px]:w-full max-[768px]:rounded-none max-[768px]:px-6 max-[768px]:py-8">
 
           {/* Logo */}
-          <h4 className="text-secondary flex items-center gap-2 font-bold mb-4">
+          <h4 className="text-primary flex items-center gap-2 font-bold mb-4">
             <img src="./assets/dompet1.png" alt="E-Wallet Logo" className="w-7 h-7" />
             E-Wallet
           </h4>
@@ -187,17 +182,16 @@ export default function LoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5"
             >
-              {isLoading ? "Logging in..." : "Login"}
+              Login
             </button>
           </form>
 
           {/* Register Link */}
           <p className="text-center mt-4 text-sm text-gray-600">
             Not Have An Account?{" "}
-            <a href="/register" className="text-secondary no-underline hover:underline font-medium">
+            <a href="/register" className="text-primary no-underline hover:underline font-medium">
               Register
             </a>
           </p>

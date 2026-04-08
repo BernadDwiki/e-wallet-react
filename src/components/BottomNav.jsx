@@ -8,11 +8,11 @@ const ASSETS = {
 
 export default function BottomNav() {
   const items = [
-    { href: "#", icon: ASSETS.dashboard, active: true },
-    { href: "#", icon: ASSETS.send, active: false },
-    { href: "#", icon: ASSETS.history, active: false },
-    { href: "#", icon: ASSETS.upload, active: false },
-    { href: "#", icon: ASSETS.user, active: false },
+    { href: "/dashboard", icon: ASSETS.dashboard, active: true },
+    { href: "/transfer", icon: ASSETS.send, active: false },
+    { href: "/history-transaction", icon: ASSETS.history, active: false },
+    { href: "/top-up", icon: ASSETS.upload, active: false },
+    { href: "/profile", icon: ASSETS.user, active: false },
   ];
 
   return (
@@ -22,7 +22,7 @@ export default function BottomNav() {
           key={i}
           href={item.href}
           className={`flex-1 flex flex-col items-center justify-center no-underline transition-colors ${
-            item.active ? "text-[#2d39f5]" : "text-gray-400 hover:text-gray-600"
+            item.active ? "bg-[#2d39f5] text-[#2d39f5]" : "text-gray-400 hover:text-gray-600"
           }`}
         >
           <img

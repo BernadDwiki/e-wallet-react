@@ -18,10 +18,6 @@
   }
 
   .text-primary {
-    @apply text-[#2d39f5];
-  }
-
-  .text-secondary {
     @apply text-[#4a6cf7];
   }
 }

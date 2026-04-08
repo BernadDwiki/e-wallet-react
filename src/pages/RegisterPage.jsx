@@ -13,7 +13,6 @@ export default function RegisterPage() {
     confirmPassword: ""
   });
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
@@ -47,8 +46,6 @@ export default function RegisterPage() {
 
     if (!validateForm()) return;
 
-    setIsLoading(true);
-
     try {
       // Fake registration using localStorage
       const newUser = authStorage.register({
@@ -76,8 +73,6 @@ export default function RegisterPage() {
         message: err.message,
         type: "error"
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -92,7 +87,7 @@ export default function RegisterPage() {
         <section className="w-1/2 bg-white px-16 py-8 flex flex-col justify-center rounded-tr-[40px] rounded-br-[40px]">
 
           {/* Logo */}
-          <h4 className="text-secondary flex items-center gap-2 font-bold text-sm mb-2">
+          <h4 className="text-primary flex items-center gap-2 font-bold text-sm mb-2">
             <img src="./assets/dompet1.png" alt="" className="w-7 h-7" />
             <span>E-Wallet</span>
           </h4>
@@ -220,16 +215,15 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5"
             >
-              {isLoading ? "Registering..." : "Register"}
+              Register
             </button>
           </form>
 
           <p className="text-center mt-3 text-sm">
             Have An Account?{" "}
-            <a href="/login" className="text-secondary no-underline hover:underline">
+            <a href="/login" className="text-primary no-underline hover:underline">
               Login
             </a>
           </p>

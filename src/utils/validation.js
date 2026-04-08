@@ -40,6 +40,12 @@ const registerSchema = Joi.object({
   })
 });
 
+/**
+ * Convert Joi validation error details into a keyed error object.
+ *
+ * @param {object|null} error - Joi validation error object.
+ * @returns {object} Map of field names to error messages.
+ */
 const formatErrors = (error) => {
   if (!error) return {};
   return error.details.reduce((acc, detail) => {
@@ -52,6 +58,12 @@ const formatErrors = (error) => {
   }, {});
 };
 
+/**
+ * Validate login form values.
+ *
+ * @param {{ email: string, password: string }} formData
+ * @returns {{ email?: string, password?: string }} Validation errors keyed by field.
+ */
 export const validateLoginForm = (formData) => {
   const { error } = loginSchema.validate(formData, { abortEarly: false, allowUnknown: false });
   return formatErrors(error);
@@ -62,15 +74,14 @@ export const validateRegisterForm = (formData) => {
   return formatErrors(error);
 };
 
-export const validatePin = (pin) => {
-  if (!pin || pin.length !== 6) return 'PIN must be 6 digits';
-  if (!/^\d{6}$/.test(pin)) return 'PIN must contain only numbers';
-  return '';
-};
-
-// LocalStorage utilities for fake authentication
+// Fake authentication helpers using localStorage.
 export const authStorage = {
-  // Register user
+  /**
+   * Register a new user in localStorage.
+   *
+   * @param {{ email: string, password: string, name: string }} userData
+   * @returns {{ id: string, email: string, password: string, name: string, createdAt: string }}
+   */
   register: (userData) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const existingUser = users.find(user => user.email === userData.email);
@@ -90,7 +101,13 @@ export const authStorage = {
     return newUser;
   },
 
-  // Login user
+  /**
+   * Authenticate user from localStorage.
+   *
+   * @param {string} email
+   * @param {string} password
+   * @returns {{ id: string, email: string, password: string, name?: string }}
+   */
   login: (email, password) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const user = users.find(user => user.email === email && user.password === password);
@@ -109,18 +126,20 @@ export const authStorage = {
     return user;
   },
 
-  // Get current user
   getCurrentUser: () => {
     const user = localStorage.getItem('currentUser');
     return user ? JSON.parse(user) : null;
   },
 
-  // Logout
   logout: () => {
     localStorage.removeItem('currentUser');
   },
 
-  // Check if user is logged in
+  /**
+   * Check if a current user session exists.
+   *
+   * @returns {boolean}
+   */
   isLoggedIn: () => {
     return !!localStorage.getItem('currentUser');
   }
