@@ -14,7 +14,7 @@ export default function HistoryTransaction() {
 
   useEffect(() => {
     if (!currentUser) {
-      navigate("/login");
+      navigate("/auth/login");
     }
   }, [currentUser, navigate]);
 

@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!currentUser) {
-      navigate("/login");
+      navigate("/auth/login");
     }
   }, [currentUser, navigate]);
 
@@ -36,7 +36,7 @@ export default function Dashboard() {
     });
 
     setTimeout(() => {
-      navigate("/login");
+      navigate("/auth/login");
     }, 1500);
   };
 

@@ -1,3 +1,5 @@
+import { NavLink } from "react-router-dom";
+
 const ASSETS = {
   dashboard: "./assets/dashboard-two.png",
   send: "./assets/Send.png",
@@ -8,34 +10,38 @@ const ASSETS = {
 
 export default function BottomNav() {
   const items = [
-    { href: "/dashboard", icon: ASSETS.dashboard, active: true },
-    { href: "/transfer", icon: ASSETS.send, active: false },
-    { href: "/history-transaction", icon: ASSETS.history, active: false },
-    { href: "/top-up", icon: ASSETS.upload, active: false },
-    { href: "/profile", icon: ASSETS.user, active: false },
+    { href: "/dashboard", icon: ASSETS.dashboard },
+    { href: "/transfer", icon: ASSETS.send },
+    { href: "/history-transaction", icon: ASSETS.history },
+    { href: "/top-up", icon: ASSETS.upload },
+    { href: "/profile", icon: ASSETS.user },
   ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-200 z-50 flex">
       {items.map((item, i) => (
-        <a
+        <NavLink
           key={i}
-          href={item.href}
-          className={`flex-1 flex flex-col items-center justify-center no-underline transition-colors ${
-            item.active ? "bg-[#2d39f5] text-[#2d39f5]" : "text-gray-400 hover:text-gray-600"
-          }`}
+          to={item.href}
+          className={({ isActive }) =>
+            `flex-1 flex flex-col items-center justify-center no-underline transition-colors ${
+              isActive ? "bg-[#2d39f5] text-white" : "text-gray-400 hover:text-gray-600"
+            }`
+          }
         >
-          <img
-            src={item.icon}
-            alt=""
-            className="w-5 h-5 object-contain"
-            style={
-              item.active
-                ? { filter: "invert(25%) sepia(98%) saturate(2000%) hue-rotate(224deg) brightness(95%)" }
-                : {}
-            }
-          />
-        </a>
+          {({ isActive }) => (
+            <img
+              src={item.icon}
+              alt=""
+              className="w-5 h-5 object-contain"
+              style={
+                isActive
+                  ? { filter: "brightness(0) invert(1)" }
+                  : { filter: "brightness(0)" }
+              }
+            />
+          )}
+        </NavLink>
       ))}
     </nav>
   );

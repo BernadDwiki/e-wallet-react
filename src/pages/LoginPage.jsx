@@ -82,7 +82,7 @@ export default function LoginPage() {
 
           {/* Logo */}
           <h4 className="text-primary flex items-center gap-2 font-bold mb-4">
-            <img src="./assets/dompet1.png" alt="E-Wallet Logo" className="w-7 h-7" />
+            <img src="/assets/dompet1.png" alt="E-Wallet Logo" className="w-7 h-7" />
             E-Wallet
           </h4>
 
@@ -131,7 +131,7 @@ export default function LoginPage() {
             </label>
             <div className="relative w-full mb-3">
               <img
-                src="./assets/mail.png"
+                src="/assets/mail.png"
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5"
                 alt="Email Icon"
               />
@@ -155,7 +155,7 @@ export default function LoginPage() {
             </label>
             <div className="relative w-full mb-3">
               <img
-                src="./assets/Password.png"
+                src="/assets/Password.png"
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5"
                 alt="Password Icon"
               />
@@ -171,7 +171,7 @@ export default function LoginPage() {
                 }`}
               />
               <img
-                src="./assets/EyeSlash.png"
+                src="/assets/EyeSlash.png"
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer"
                 alt="Toggle Password Visibility"
                 onClick={() => setShowPassword(!showPassword)}
@@ -191,7 +191,7 @@ export default function LoginPage() {
           {/* Register Link */}
           <p className="text-center mt-4 text-sm text-gray-600">
             Not Have An Account?{" "}
-            <a href="/register" className="text-primary no-underline hover:underline font-medium">
+            <a href="/auth/register" className="text-primary no-underline hover:underline font-medium">
               Register
             </a>
           </p>
@@ -200,7 +200,7 @@ export default function LoginPage() {
 
         {/* RIGHT SIDE */}
         <section className="w-1/2 flex justify-center items-center max-[768px]:hidden">
-          <img src="./assets/login1.png" alt="Login Illustration" className="w-[600px] max-w-full" />
+          <img src="/assets/login1.png" alt="Login Illustration" className="w-[600px] max-w-full" />
         </section>
       </main>
 

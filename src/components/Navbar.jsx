@@ -22,13 +22,13 @@ const Navbar = () => {
       {/* Desktop Navigation */}
       <nav className="hidden md:flex items-center gap-4">
         <a
-          href="/login"
+          href="/auth/login"
           className="text-white no-underline rounded-lg border border-white px-[15px] py-[10px] hover:bg-white hover:text-[#2948ff] transition-colors duration-300"
         >
           SignIn
         </a>
         <a
-          href="/register"
+          href="/auth/register"
           className="bg-white text-[#2948ff] no-underline rounded-lg border border-white px-[15px] py-[10px] hover:opacity-90 transition-opacity duration-300 font-semibold"
         >
           Sign Up
@@ -51,14 +51,14 @@ const Navbar = () => {
         <div className="absolute top-full left-0 right-0 bg-[#2948ff] md:hidden shadow-lg animate-in fade-in slide-in-from-top-2">
           <nav className="flex flex-col gap-0 p-4">
             <a
-              href="/login"
+              href="/auth/login"
               onClick={closeMenu}
               className="text-white no-underline px-4 py-3 rounded-lg border border-white hover:bg-white hover:text-[#2948ff] transition-colors duration-300 text-center font-semibold"
             >
               SignIn
             </a>
             <a
-              href="/register"
+              href="/auth/register"
               onClick={closeMenu}
               className="mt-2 bg-white text-[#2948ff] no-underline px-4 py-3 rounded-lg border border-white hover:opacity-90 transition-opacity duration-300 text-center font-semibold"
             >
