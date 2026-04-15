@@ -1,31 +1,23 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRequireAuth } from "../hooks/useRequireAuth.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import TransactionList from "../components/TransactionList";
-import Modal from "../components/Modal";
-import { authStorage } from "../utils/validation";
 import BottomNav from "../components/BottomNav";
 
 export default function HistoryTransaction() {
-  const navigate = useNavigate();
-  const currentUser = authStorage.getCurrentUser();
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const currentUser = useRequireAuth();
 
-  useEffect(() => {
-    if (!currentUser) {
-      navigate("/auth/login");
-    }
-  }, [currentUser, navigate]);
-
-  const handleLogout = () => {
-    authStorage.logout();
-    navigate("/");
-  };
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
+        <div className="text-white text-xl font-semibold">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      <Topbar currentUser={currentUser} onLogout={handleLogout} />
+      <Topbar currentUser={currentUser} />
 
       <div className="pt-16 flex">
         <Sidebar />
@@ -45,16 +37,6 @@ export default function HistoryTransaction() {
         {/* Bottom Nav (mobile) */}
         <BottomNav />
       </div>
-
-      <Modal
-        isOpen={showLogoutModal}
-        onClose={() => setShowLogoutModal(false)}
-        onConfirm={handleLogout}
-        title="Logout"
-        message="Are you sure you want to logout?"
-        confirmText="Logout"
-        cancelText="Cancel"
-      />
     </div>
   );
 }

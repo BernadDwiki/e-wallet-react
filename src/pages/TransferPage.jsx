@@ -1,8 +1,10 @@
-import { useState, useEffect, useLayoutEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { authStorage } from "../utils/validation";
+import { useRequireAuth } from "../hooks/useRequireAuth.js";
+import useLocalStorage from "../hooks/useLocalStorage.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
+import BottomNav from "../components/BottomNav";
 
 const PEOPLE = [
   { id: 1, name: "Ghaluh 1", phone: "(239) 555–0108", avatar: "../assets/prof3/Rectangle 648.png", highlighted: true },
@@ -18,15 +20,9 @@ const PEOPLE = [
 export default function TransferPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentUser = authStorage.getCurrentUser();
-  const [search, setSearch] = useState(searchParams.get('search') || "");
-  const [starred, setStarred] = useState({});
-
-  useEffect(() => {
-    if (!currentUser) {
-      navigate("/login");
-    }
-  }, [currentUser, navigate]);
+  const currentUser = useRequireAuth();
+  const [search, setSearch] = useLocalStorage("transfer_search", searchParams.get('search') || "");
+  const [starred, setStarred] = useLocalStorage("transfer_starred", {});
 
   useLayoutEffect(() => {
     window.history.scrollRestoration = "manual";
@@ -44,11 +40,6 @@ export default function TransferPage() {
   const toggleStar = (id) =>
     setStarred((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const handleLogout = () => {
-    authStorage.logout();
-    navigate("/login");
-  };
-
   const handleSearchChange = (value) => {
     setSearch(value);
     if (value.trim()) {
@@ -60,7 +51,7 @@ export default function TransferPage() {
 
   return (
     <div className="min-h-screen bg-gray-100" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      <Topbar currentUser={currentUser} onLogout={handleLogout} />
+      <Topbar currentUser={currentUser} />
 
       <div className="grid" style={{ gridTemplateRows: "1fr", gridTemplateColumns: "196px 1fr", gridTemplateAreas: '"sidebar main"', minHeight: "calc(100vh - 64px)", marginTop: "64px" }}>
         <div style={{ gridArea: "sidebar" }}>
@@ -188,24 +179,8 @@ export default function TransferPage() {
         </main>
       </div>
 
-      {/* ── BOTTOM NAV (mobile only) ── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-200 z-50 flex items-stretch">
-        <a href="#" className="flex-1 flex flex-col items-center justify-center no-underline">
-          <img src="../assets/dashboard-two.png" alt="" className="w-5 h-5 object-contain" style={{ filter: "invert(25%) sepia(98%) saturate(2000%) hue-rotate(224deg) brightness(95%)" }} />
-        </a>
-        <a href="transfer.html" className="flex-1 flex flex-col items-center justify-center no-underline">
-          <img src="../assets/Send.png" alt="" className="w-5 h-5 object-contain opacity-50" />
-        </a>
-        <a href="history-transaction.html" className="flex-1 flex flex-col items-center justify-center no-underline">
-          <img src="../assets/history.png" alt="" className="w-5 h-5 object-contain opacity-50" />
-        </a>
-        <a href="#" className="flex-1 flex flex-col items-center justify-center no-underline">
-          <img src="../assets/Upload.png" alt="" className="w-5 h-5 object-contain opacity-50" />
-        </a>
-        <a href="#" className="flex-1 flex flex-col items-center justify-center no-underline">
-          <img src="../assets/2 User.png" alt="" className="w-5 h-5 object-contain opacity-50" />
-        </a>
-      </nav>
+      {/* Bottom Nav (mobile) */}
+      <BottomNav />
     </div>
   );
 }

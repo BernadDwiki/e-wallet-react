@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import useLocalStorage from '../hooks/useLocalStorage.js';
 
 const BASE = '../assets';
 
@@ -30,7 +30,7 @@ export function PersonInfo({ name = 'Ghaluh 1', phone = '(239) 555–0108' }) {
 }
 
 export function AmountSection() {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useLocalStorage('transfer_amount', '');
 
   return (
     <div>
@@ -57,7 +57,7 @@ export function AmountSection() {
 }
 
 export function NotesSection() {
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useLocalStorage('transfer_notes', '');
 
   return (
     <div>

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth.js";
 
 const ASSETS = {
   logo: "./assets/dompet1.png",
@@ -12,11 +14,17 @@ const ASSETS = {
  * Komponen bar navigasi atas dengan logo, menu pengguna, dan fungsi logout.
  *
  * @param {object} currentUser - Objek pengguna yang sedang login.
- * @param {function} onLogout - Fungsi yang dipanggil saat pengguna logout.
  * @returns {JSX.Element} Komponen topbar.
  */
-export default function Topbar({ currentUser, onLogout }) {
+export default function Topbar({ currentUser }) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/auth/login");
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 flex items-center justify-between px-7 h-16 fixed top-0 left-0 right-0 z-50 shadow-sm">
@@ -50,7 +58,7 @@ export default function Topbar({ currentUser, onLogout }) {
             </a>
             <button
               type="button"
-              onClick={onLogout}
+              onClick={handleLogout}
               className="group flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-900 hover:bg-blue-600 hover:text-white transition-colors"
             >
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 transition-colors">

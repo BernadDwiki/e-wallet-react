@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useRequireAuth } from '../hooks/useRequireAuth.js';
 import Topbar from '../components/Topbar';
 import Sidebar from '../components/Sidebar';
 import { PersonInfo, AmountSection, NotesSection } from '../components/TransferSections';
+import BottomNav from '../components/BottomNav';
 
 function Steps() {
   const steps = [
@@ -35,13 +37,22 @@ function Steps() {
 }
 
 export default function TransferNominal() {
-  const [showPinModal, setShowPinModal] = useState(false);
+  const currentUser = useRequireAuth();
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
+        <div className="text-white text-xl font-semibold">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="grid min-h-screen font-[Plus_Jakarta_Sans,sans-serif] bg-[#F5F6FA]"
       style={{ gridTemplateRows: '64px 1fr', gridTemplateColumns: '196px 1fr' }}
     >
-      <Topbar />
+      <Topbar currentUser={currentUser} />
       <Sidebar />
 
       <main className="p-7 mt-16 flex flex-col gap-5 bg-[#F5F6FA]">
@@ -67,6 +78,9 @@ export default function TransferNominal() {
           </button>
         </div>
       </main>
+
+      {/* Bottom Nav (mobile) */}
+      <BottomNav />
     </div>
   );
 }

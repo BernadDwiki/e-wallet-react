@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useRequireAuth } from "../hooks/useRequireAuth.js";
+import useLocalStorage from "../hooks/useLocalStorage.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
+import BottomNav from "../components/BottomNav";
 
 const ASSETS = "/assets";
 
@@ -14,9 +16,8 @@ const paymentMethods = [
 
 /* ── MAIN CONTENT ── */
 function TopUpContent() {
-  const [selected, setSelected] = useState("bri");
-  const [amount, setAmount] = useState("");
-
+  const [selected, setSelected] = useLocalStorage("topup_payment_method", "bri");
+  const [amount, setAmount] = useLocalStorage("topup_amount", "");
   const TAX = 4000;
   const order = parseInt(amount.replace(/\D/g, "")) || 40000;
   const subtotal = order + TAX;
@@ -182,16 +183,29 @@ function TopUpContent() {
 
 /* ── ROOT APP SHELL ── */
 export default function TopUp() {
+  const currentUser = useRequireAuth();
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
+        <div className="text-white text-xl font-semibold">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="grid min-h-screen font-[Plus_Jakarta_Sans,sans-serif] bg-[#F5F6FA]"
       style={{ gridTemplateRows: '64px 1fr', gridTemplateColumns: '196px 1fr' }}
     >
       <div className="col-span-2">
-        <Topbar />
+        <Topbar currentUser={currentUser} />
       </div>
       <Sidebar />
       <TopUpContent />
+
+      {/* Bottom Nav (mobile) */}
+      <BottomNav />
     </div>
   );
 }

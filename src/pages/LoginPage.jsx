@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { validateLoginForm, authStorage } from "../utils/validation";
+import { validateLoginForm } from "../utils/validation.js";
+import { useAuth } from "../hooks/useAuth.js";
 import Modal from "../components/Modal";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -46,7 +48,7 @@ export default function LoginPage() {
 
     try {
       // Fake authentication using localStorage
-      const user = authStorage.login(formData.email, formData.password);
+      const user = await login(formData.email, formData.password);
 
       setModal({
         isOpen: true,

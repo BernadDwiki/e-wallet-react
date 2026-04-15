@@ -1,7 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { authStorage } from "../utils/validation";
-import Modal from "../components/Modal";
+import { useRequireAuth } from "../hooks/useRequireAuth.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import StatCards from "../components/StatCards";
@@ -11,38 +8,7 @@ import TransactionHistory from "../components/TransactionHistory";
 import BottomNav from "../components/BottomNav";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const currentUser = authStorage.getCurrentUser();
-  const [modal, setModal] = useState({
-    isOpen: false,
-    title: "",
-    message: "",
-    type: "success"
-  });
-
-  useEffect(() => {
-    if (!currentUser) {
-      navigate("/auth/login");
-    }
-  }, [currentUser, navigate]);
-
-  const handleLogout = () => {
-    authStorage.logout();
-    setModal({
-      isOpen: true,
-      title: "Logged Out",
-      message: "You have been successfully logged out.",
-      type: "success"
-    });
-
-    setTimeout(() => {
-      navigate("/auth/login");
-    }, 1500);
-  };
-
-  const closeModal = () => {
-    setModal(prev => ({ ...prev, isOpen: false }));
-  };
+  const currentUser = useRequireAuth();
 
   if (!currentUser) {
     return (
@@ -56,14 +22,14 @@ export default function Dashboard() {
     <>
       <div className="min-h-screen bg-gray-100" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         {/* Topbar - Fixed/Independent */}
-        <Topbar currentUser={currentUser} onLogout={handleLogout} />
+        <Topbar currentUser={currentUser} />
 
         <div
           className="grid grid-cols-1 md:grid-cols-[196px_1fr] min-h-[calc(100vh-64px)] mt-[64px]"
         >
           {/* Sidebar */}
           <div className="hidden md:block">
-            <Sidebar onLogout={handleLogout} />
+            <Sidebar />
           </div>
 
           {/* Main Content */}
@@ -94,29 +60,6 @@ export default function Dashboard() {
         {/* Bottom Nav (mobile) */}
         <BottomNav />
       </div>
-
-      {/* Modal */}
-      <Modal
-        isOpen={modal.isOpen}
-        onClose={closeModal}
-        title={modal.title}
-      >
-        <div className={`p-4 rounded-lg ${
-          modal.type === 'success' ? 'bg-green-50 text-green-800' :
-          modal.type === 'error' ? 'bg-red-50 text-red-800' :
-          'bg-blue-50 text-blue-800'
-        }`}>
-          <p className="text-center">{modal.message}</p>
-        </div>
-        <div className="flex justify-center mt-4">
-          <button
-            onClick={closeModal}
-            className="px-4 py-2 bg-[#2d39f5] text-white rounded-lg hover:opacity-90 transition-opacity"
-          >
-            OK
-          </button>
-        </div>
-      </Modal>
     </>
   );
 }

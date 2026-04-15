@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { validateRegisterForm, authStorage } from "../utils/validation";
+import { validateRegisterForm } from "../utils/validation.js";
+import { useAuth } from "../hooks/useAuth.js";
 import Modal from "../components/Modal";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
@@ -48,7 +50,7 @@ export default function RegisterPage() {
 
     try {
       // Fake registration using localStorage
-      const newUser = authStorage.register({
+      register({
         email: formData.email,
         password: formData.password,
         name: formData.email.split("@")[0], // Simple name extraction
@@ -57,7 +59,7 @@ export default function RegisterPage() {
       setModal({
         isOpen: true,
         title: "Registration Successful!",
-        message: `Welcome ${newUser.name}! Your account has been created successfully.`,
+        message: `Welcome! Your account has been created successfully.`,
         type: "success",
       });
 

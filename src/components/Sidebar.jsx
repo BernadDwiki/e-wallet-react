@@ -1,4 +1,6 @@
-import { NavLink, useLocation } from "react-router-dom"; 
+import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth.js";
+import { useNavigate } from "react-router-dom"; 
 
 const ASSETS = {
   dashboard: "./assets/dashboard-two.png",
@@ -12,8 +14,6 @@ const ASSETS = {
 /**
  * Sidebar navigasi yang digunakan pada dashboard.
  *
- * @param {object} props
- * @param {function} props.onLogout - Callback saat tombol logout diklik.
  * @returns {JSX.Element} Komponen Sidebar.
  */
 
@@ -26,8 +26,15 @@ const NAV_ITEMS = [
   { label: "Keluar", icon: ASSETS.logout, logout: true, danger: true },
 ];
 
-export default function Sidebar({ onLogout }) {
+export default function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/auth/login");
+  };
 
   return (
     <aside className="hidden md:flex bg-white border-r border-gray-200 py-4 flex-col gap-0.5 sticky top-16 h-[calc(100vh-64px)] w-[196px]">
@@ -40,7 +47,7 @@ export default function Sidebar({ onLogout }) {
             <button
               key={item.label}
               type="button"
-              onClick={onLogout}
+              onClick={handleLogout}
               className="flex items-center gap-2.5 py-2.5 px-4 text-sm font-medium rounded-[10px] mx-2.5 text-red-600 hover:bg-red-50 transition-colors"
             >
               <img

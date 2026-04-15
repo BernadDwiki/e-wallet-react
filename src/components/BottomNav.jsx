@@ -14,7 +14,7 @@ export default function BottomNav() {
     { href: "/transfer", icon: ASSETS.send },
     { href: "/history-transaction", icon: ASSETS.history },
     { href: "/top-up", icon: ASSETS.upload },
-    { href: "/profile", icon: ASSETS.user },
+    { href: "/edit-profile", icon: ASSETS.user },
   ];
 
   return (

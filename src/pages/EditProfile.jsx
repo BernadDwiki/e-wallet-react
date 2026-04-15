@@ -1,7 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useRequireAuth } from "../hooks/useRequireAuth.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
+import BottomNav from "../components/BottomNav";
 
 const ASSETS = "/assets";
 
@@ -110,13 +112,23 @@ function ProfileCard() {
 
 // ─── MAIN PAGE COMPONENT ──────────────────────────────────────────────────────
 export default function EditProfile() {
+  const currentUser = useRequireAuth();
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
+        <div className="text-white text-xl font-semibold">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="grid min-h-screen font-[Plus_Jakarta_Sans,sans-serif] bg-[#F5F6FA]"
       style={{ gridTemplateRows: '64px 1fr', gridTemplateColumns: '196px 1fr' }}
     >
       <div className="col-span-2">
-        <Topbar />
+        <Topbar currentUser={currentUser} />
       </div>
       <Sidebar />
 
@@ -135,6 +147,9 @@ export default function EditProfile() {
         {/* Card */}
         <ProfileCard />
       </main>
+
+      {/* Bottom Nav (mobile) */}
+      <BottomNav />
     </div>
   );
 }
