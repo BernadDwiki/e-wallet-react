@@ -74,3 +74,19 @@ export const validateRegisterForm = (formData) => {
   return formatErrors(error);
 };
 
+/**
+ * Validate email address.
+ *
+ * @param {string} email - Email address to validate.
+ * @returns {string} Error message if invalid, empty string if valid.
+ */
+export const validateEmail = (email) => {
+  const emailSchema = Joi.string().email({ tlds: { allow: false } }).required();
+  const { error } = emailSchema.validate(email);
+  if (error) {
+    if (!email) return 'Email is required';
+    return 'Please enter a valid email address';
+  }
+  return '';
+};
+

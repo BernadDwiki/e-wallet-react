@@ -181,6 +181,17 @@ export default function LoginPage() {
             </div>
             {errors.password && <p className="text-red-500 text-xs mb-2">{errors.password}</p>}
 
+            {/* Forgot Password Link */}
+            <div className="text-right mb-4">
+              <button
+                type="button"
+                onClick={() => navigate('/auth/forgot-password')}
+                className="text-[#4a6cf7] hover:underline text-sm bg-transparent border-none cursor-pointer"
+              >
+                Forgot Password?
+              </button>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"

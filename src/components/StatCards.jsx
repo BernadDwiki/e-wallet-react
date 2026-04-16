@@ -17,16 +17,16 @@ const STAT_CARDS = [
 
 export default function StatCards() {
   return (
-    <div className="grid grid-cols-3 gap-3.5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
       {STAT_CARDS.map((card) => (
         <Card key={card.label} className="text-left">
           <div className="flex items-center gap-2 mb-2.5">
             <img src={card.icon} alt={card.label} className="w-5 h-5 object-contain" />
             <span className="text-[13px] text-gray-500 font-medium">{card.label}</span>
           </div>
-          <div className="text-[22px] font-extrabold text-gray-900 mb-2">{card.value}</div>
+          <div className="text-[22px] md:text-[22px] font-extrabold text-gray-900 mb-2 break-words">{card.value}</div>
           <div className="inline-flex items-center">
-            <img src={card.badge} alt="" className="h-[30px] w-auto object-contain block" />
+            <img src={card.badge} alt="" className="h-[30px] w-auto object-contain" />
           </div>
         </Card>
       ))}

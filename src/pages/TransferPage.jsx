@@ -53,8 +53,8 @@ export default function TransferPage() {
     <div className="min-h-screen bg-gray-100" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <Topbar currentUser={currentUser} />
 
-      <div className="grid" style={{ gridTemplateRows: "1fr", gridTemplateColumns: "196px 1fr", gridTemplateAreas: '"sidebar main"', minHeight: "calc(100vh - 64px)", marginTop: "64px" }}>
-        <div style={{ gridArea: "sidebar" }}>
+      <div className="grid grid-cols-1 md:grid-cols-[196px_1fr]" style={{ gridTemplateRows: "1fr", gridTemplateAreas: '"sidebar main"', minHeight: "calc(100vh - 64px)", marginTop: "64px" }}>
+        <div className="hidden md:block" style={{ gridArea: "sidebar" }}>
           <Sidebar />
         </div>
 

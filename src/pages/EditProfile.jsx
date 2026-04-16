@@ -124,13 +124,15 @@ export default function EditProfile() {
 
   return (
     <div
-      className="grid min-h-screen font-[Plus_Jakarta_Sans,sans-serif] bg-[#F5F6FA]"
-      style={{ gridTemplateRows: '64px 1fr', gridTemplateColumns: '196px 1fr' }}
+      className="grid grid-cols-1 md:grid-cols-[196px_1fr] min-h-screen font-[Plus_Jakarta_Sans,sans-serif] bg-[#F5F6FA]"
+      style={{ gridTemplateRows: '64px 1fr' }}
     >
-      <div className="col-span-2">
+      <div className="col-span-1 md:col-span-2">
         <Topbar currentUser={currentUser} />
       </div>
-      <Sidebar />
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
       {/* Main Content */}
       <main className="p-7 flex flex-col gap-5 bg-[#F5F6FA]">
