@@ -1,9 +1,11 @@
-import React from 'react';
-import { useRequireAuth } from '../hooks/useRequireAuth.js';
+import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth.js';
 import Topbar from '../components/Topbar';
 import Sidebar from '../components/Sidebar';
 import { PersonInfo, AmountSection, NotesSection } from '../components/TransferSections';
 import BottomNav from '../components/BottomNav';
+import PinModal from '../components/PinModal';
+import React from 'react';
 
 function Steps() {
   const steps = [
@@ -17,10 +19,8 @@ function Steps() {
       {steps.map((step, i) => (
         <React.Fragment key={step.num}>
           <div className="flex items-center gap-2">
-            <div
-              className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0
-                ${step.active ? 'bg-[#2D39F5] text-white' : 'bg-gray-300 text-gray-500'}`}
-            >
+            <div className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0
+              ${step.active ? 'bg-[#2D39F5] text-white' : 'bg-gray-300 text-gray-500'}`}>
               {step.num}
             </div>
             <span className={`text-[13px] font-semibold ${step.active ? 'text-gray-900' : 'text-gray-400'}`}>
@@ -37,15 +37,8 @@ function Steps() {
 }
 
 export default function TransferNominal() {
-  const currentUser = useRequireAuth();
-
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
-        <div className="text-white text-xl font-semibold">Loading...</div>
-      </div>
-    );
-  }
+  const { currentUser } = useAuth();
+  const [showPinModal, setShowPinModal] = useState(false);
 
   return (
     <div
@@ -55,7 +48,8 @@ export default function TransferNominal() {
       <Topbar currentUser={currentUser} />
       <Sidebar />
 
-      <main className="p-7 mt-16 flex flex-col gap-5 bg-[#F5F6FA]">
+      {/* position: relative agar modal absolute terkurung di sini */}
+      <main className="p-7 mt-16 flex flex-col gap-5 bg-[#F5F6FA] relative">
         {/* Page Header */}
         <div className="flex items-center gap-2.5">
           <img src="/assets/Send-2.png" alt="Transfer Icon" className="w-[22px] h-[22px] object-contain" />
@@ -72,14 +66,21 @@ export default function TransferNominal() {
           <NotesSection />
 
           <button
+            onClick={() => setShowPinModal(true)}
             className="w-full py-4 bg-[#2D39F5] text-white border-none rounded-xl font-[inherit] text-[15px] font-bold cursor-pointer hover:opacity-90 transition-opacity"
           >
             Submit &amp; Transfer
           </button>
         </div>
+
+        {/* Modal PIN — absolute di dalam main */}
+        <PinModal
+          isOpen={showPinModal}
+          onClose={() => setShowPinModal(false)}
+          recipientName="Ghaluh 1"
+        />
       </main>
 
-      {/* Bottom Nav (mobile) */}
       <BottomNav />
     </div>
   );

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useRequireAuth } from "../hooks/useRequireAuth.js";
+import { useAuth } from "../hooks/useAuth.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
@@ -7,17 +7,10 @@ import BottomNav from "../components/BottomNav";
 const ASSETS = "/assets";
 
 export default function ChangePin() {
-  const currentUser = useRequireAuth();
-  const [pins, setPins] = useState(Array(6).fill(""));
+  const { currentUser, changePin } = useAuth();
+  const [pins, setPins] = useState(Array(6).fill(''));
+  const [isSaving, setIsSaving] = useState(false);
   const inputRefs = useRef([]);
-
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
-        <div className="text-white text-xl font-semibold">Loading...</div>
-      </div>
-    );
-  }
 
   const handleChange = (index, value) => {
     if (!/^\d?$/.test(value)) return;
@@ -30,18 +23,27 @@ export default function ChangePin() {
   };
 
   const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !pins[index] && index > 0) {
+    if (e.key === 'Backspace' && !pins[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  const handleSubmit = () => {
-    const pin = pins.join("");
+  const handleSubmit = async () => {
+    const pin = pins.join('');
     if (pin.length < 6) {
-      alert("Please fill all 6 PIN digits.");
+      alert('Please fill all 6 PIN digits.');
       return;
     }
-    alert(`PIN submitted: ${pin}`);
+    setIsSaving(true);
+    try {
+      await changePin(pin);
+      alert('PIN berhasil diperbarui.');
+      setPins(Array(6).fill(''));
+    } catch (error) {
+      alert(error.message || 'Gagal memperbarui PIN.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -90,10 +92,10 @@ export default function ChangePin() {
                 maxLength={1}
                 value={val}
                 placeholder="0"
+                disabled={isSaving}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
-                className={`w-12 bg-transparent border-0 border-b-2 outline-none text-center text-2xl font-bold text-gray-900 py-1.5 placeholder-gray-300 transition-colors
-                  ${val ? "border-[#2D39F5]" : "border-gray-300 focus:border-[#2D39F5]"}`}
+                className={`w-14 h-14 text-center text-xl font-bold border rounded-xl outline-none ${val ? 'border-[#2D39F5]' : 'border-gray-300'} focus:border-[#2D39F5]`}
               />
             ))}
           </div>
@@ -101,9 +103,10 @@ export default function ChangePin() {
           {/* Submit */}
           <button
             onClick={handleSubmit}
-            className="w-full mt-8 py-3.5 bg-[#2D39F5] text-white rounded-[10px] text-[15px] font-bold cursor-pointer hover:opacity-90 transition-opacity border-0"
+            disabled={isSaving}
+            className="w-full mt-8 py-3.5 bg-[#2D39F5] text-white rounded-[10px] text-[15px] font-bold cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 border-0"
           >
-            Submit
+            {isSaving ? 'Saving...' : 'Submit'}
           </button>
         </div>
       </main>

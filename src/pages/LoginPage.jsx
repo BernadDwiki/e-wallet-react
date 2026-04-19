@@ -57,9 +57,13 @@ export default function LoginPage() {
         type: "success"
       });
 
-      // Redirect after successful login
+      // Check if user has PIN, if not redirect to enter PIN
       setTimeout(() => {
-        navigate("/dashboard");
+        if (!user.pin) {
+          navigate("/auth/enter-pin");
+        } else {
+          navigate("/dashboard");
+        }
       }, 2000);
 
     } catch (err) {
@@ -213,7 +217,7 @@ export default function LoginPage() {
 
         {/* RIGHT SIDE */}
         <section className="w-1/2 flex justify-center items-center max-[768px]:hidden">
-          <img src="/assets/login1.png" alt="Login Illustration" className="w-[600px] max-w-full" />
+          <img src="/assets/login1.png" alt="Login Illustration" className="w-150 max-w-full" />
         </section>
       </main>
 

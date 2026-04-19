@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useRequireAuth } from "../hooks/useRequireAuth.js";
+import { useAuth } from "../hooks/useAuth.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
@@ -8,7 +8,7 @@ import BottomNav from "../components/BottomNav";
 const ASSETS = "/assets";
 
 // ─── INPUT FIELD ──────────────────────────────────────────────────────────────
-function InputField({ label, type, placeholder, icon }) {
+function InputField({ label, type, placeholder, icon, value, onChange }) {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-bold text-gray-900">{label}</label>
@@ -16,10 +16,12 @@ function InputField({ label, type, placeholder, icon }) {
         <img
           src={`${ASSETS}/${icon}`}
           alt=""
-          className="w-4 h-4 object-contain opacity-50 flex-shrink-0"
+          className="w-4 h-4 object-contain opacity-50 shrink-0"
         />
         <input
           type={type}
+          value={value}
+          onChange={onChange}
           placeholder={placeholder}
           className="border-none outline-none text-sm text-gray-900 flex-1 bg-transparent placeholder-gray-400"
         />
@@ -28,22 +30,41 @@ function InputField({ label, type, placeholder, icon }) {
   );
 }
 
-// ─── PROFILE CARD ─────────────────────────────────────────────────────────────
 function ProfileCard() {
+  const { currentUser, updateUser } = useAuth();
   const [profileImage, setProfileImage] = React.useState(`${ASSETS}/User.png`);
+  const [name, setName] = React.useState(currentUser?.name || "");
+  const [phone, setPhone] = React.useState(currentUser?.phone || "");
+  const [email, setEmail] = React.useState(currentUser?.email || "");
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    setName(currentUser?.name || "");
+    setPhone(currentUser?.phone || "");
+    setEmail(currentUser?.email || "");
+  }, [currentUser]);
+
+  const handleSubmit = async () => {
+    setIsSaving(true);
+    try {
+      await updateUser({ name, phone, email });
+      alert("Profile berhasil diperbarui.");
+    } catch (error) {
+      alert(error.message || "Gagal memperbarui profil.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-7 flex flex-col gap-5">
-      {/* Section Title */}
       <div className="text-sm font-bold text-gray-900 -mb-1">Profile Picture</div>
-
-      {/* Avatar Row */}
       <div className="flex items-center gap-5">
-        <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+        <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
           <img
             src={profileImage}
             alt="Profile"
-            className={`object-cover ${profileImage === `${ASSETS}/ghaluh.png` ? 'w-full h-full' : 'w-1/2 h-1/2'}`}
+            className={`object-cover ${profileImage === `${ASSETS}/ghaluh.png` ? "w-full h-full" : "w-1/2 h-1/2"}`}
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -70,12 +91,10 @@ function ProfileCard() {
         The profile picture must be 512 x 512 pixels or less.
       </p>
 
-      {/* Form Fields */}
-      <InputField label="Full Name" type="text"  placeholder="Enter Full Name"           icon="User.png"  />
-      <InputField label="Phone"     type="tel"   placeholder="Enter Your Number Phone"   icon="Phone.png" />
-      <InputField label="Email"     type="email" placeholder="Enter Your Email"          icon="mail.png"  />
+      <InputField label="Full Name" type="text" placeholder="Enter Full Name" icon="User.png" value={name} onChange={(e) => setName(e.target.value)} />
+      <InputField label="Phone" type="tel" placeholder="Enter Your Number Phone" icon="Phone.png" value={phone} onChange={(e) => setPhone(e.target.value)} />
+      <InputField label="Email" type="email" placeholder="Enter Your Email" icon="mail.png" value={email} onChange={(e) => setEmail(e.target.value)} />
 
-      {/* Password */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-bold text-gray-900">Password</label>
         <Link
@@ -87,7 +106,6 @@ function ProfileCard() {
         </Link>
       </div>
 
-      {/* Pin */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-bold text-gray-900">Pin</label>
         <Link
@@ -99,12 +117,13 @@ function ProfileCard() {
         </Link>
       </div>
 
-      {/* Submit */}
       <button
-        className="w-full py-4 text-white text-base font-bold rounded-xl cursor-pointer mt-1 hover:opacity-90 transition-opacity"
+        disabled={isSaving}
+        onClick={handleSubmit}
+        className="w-full py-4 text-white text-base font-bold rounded-xl cursor-pointer mt-1 hover:opacity-90 transition-opacity disabled:opacity-50"
         style={{ backgroundColor: "#2D39F5" }}
       >
-        Submit
+        {isSaving ? "Saving..." : "Save Profile"}
       </button>
     </div>
   );
@@ -112,7 +131,7 @@ function ProfileCard() {
 
 // ─── MAIN PAGE COMPONENT ──────────────────────────────────────────────────────
 export default function EditProfile() {
-  const currentUser = useRequireAuth();
+  const { currentUser } = useAuth();
 
   if (!currentUser) {
     return (

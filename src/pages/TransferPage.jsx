@@ -1,6 +1,6 @@
 import { useLayoutEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useRequireAuth } from "../hooks/useRequireAuth.js";
+import { useAuth } from "../hooks/useAuth.js";
 import useLocalStorage from "../hooks/useLocalStorage.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
@@ -20,7 +20,7 @@ const PEOPLE = [
 export default function TransferPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentUser = useRequireAuth();
+  const { currentUser } = useAuth();
   const [search, setSearch] = useLocalStorage("transfer_search", searchParams.get('search') || "");
   const [starred, setStarred] = useLocalStorage("transfer_starred", {});
 

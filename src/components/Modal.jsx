@@ -9,7 +9,7 @@ import { useEffect } from 'react';
  * @param {JSX.Element} children - Konten yang ditampilkan di dalam modal.
  * @returns {JSX.Element} Komponen modal atau fragment kosong jika tidak terbuka.
  */
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, backdropClassName = '', disableBodyScroll = true }) => {
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') onClose();
@@ -17,22 +17,26 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      if (disableBodyScroll) {
+        document.body.style.overflow = 'hidden';
+      }
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      if (disableBodyScroll) {
+        document.body.style.overflow = 'unset';
+      }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, disableBodyScroll]);
 
   if (!isOpen) return <></>;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center ${backdropClassName}`}>
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black bg-opacity-25 transition-opacity"
+        className="absolute inset-0 bg-black/90 transition-opacity"
         onClick={onClose}
       />
 

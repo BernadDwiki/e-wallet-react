@@ -1,19 +1,11 @@
-import { useRequireAuth } from "../hooks/useRequireAuth.js";
+import { useAuth } from "../hooks/useAuth.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import TransactionList from "../components/TransactionList";
 import BottomNav from "../components/BottomNav";
 
 export default function HistoryTransaction() {
-  const currentUser = useRequireAuth();
-
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
-        <div className="text-white text-xl font-semibold">Loading...</div>
-      </div>
-    );
-  }
+  const { currentUser } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>

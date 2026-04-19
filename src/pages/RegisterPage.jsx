@@ -83,7 +83,7 @@ export default function RegisterPage() {
 
   return (
     <>
-      <main className="flex h-screen bg-white lg:bg-gradient-to-br lg:from-[#4a6cf7] lg:to-[#2d46c0] max-[768px]:flex-col max-[768px]:items-center max-[768px]:justify-center">
+      <main className="flex h-screen bg-white lg:bg-linear-to-br lg:from-[#4a6cf7] lg:to-[#2d46c0] max-[768px]:flex-col max-[768px]:items-center max-[768px]:justify-center">
         {/* LEFT SIDE */}
         <section className="w-1/2 bg-white px-16 py-8 flex flex-col justify-center rounded-tr-[40px] rounded-br-[40px] max-[768px]:w-full max-[768px]:rounded-none max-[768px]:px-6 max-[768px]:py-8 max-[480px]:px-4 max-[480px]:py-6">
           {/* Logo */}
@@ -250,7 +250,7 @@ export default function RegisterPage() {
           <img
             src="/assets/wallet.png"
             alt="wallet"
-            className="w-[550px] max-w-full"
+            className="w-137.5 max-w-full"
           />
         </section>
       </main>

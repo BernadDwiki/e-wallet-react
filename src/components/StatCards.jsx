@@ -12,7 +12,7 @@ const ASSETS = {
 const STAT_CARDS = [
   { label: "Balance", value: "Rp.120.000", icon: ASSETS.balance, badge: ASSETS.badgeBalance },
   { label: "Income", value: "Rp.2.120.000", icon: ASSETS.income, badge: ASSETS.badgeIncome },
-  { label: "Expense", value: "Rp.200.000", icon: ASSETS.expense, badge: ASSETS.badgeExpense },
+  { label: "Expense", value: "Rp.2.000.000", icon: ASSETS.expense, badge: ASSETS.badgeExpense },
 ];
 
 export default function StatCards() {

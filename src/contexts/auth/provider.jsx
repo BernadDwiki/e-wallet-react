@@ -27,8 +27,12 @@ export const AuthProvider = ({ children }) => {
     return newUser;
   };
 
+  const updateUser = (updatedUser) => {
+    setUsers((prevUsers) => prevUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user)));
+  };
+
   return (
-    <AuthContext.Provider value={{ users, register }}>
+    <AuthContext.Provider value={{ users, register, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

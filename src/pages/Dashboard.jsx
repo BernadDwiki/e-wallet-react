@@ -1,4 +1,4 @@
-import { useRequireAuth } from "../hooks/useRequireAuth.js";
+import { useAuth } from "../hooks/useAuth.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import StatCards from "../components/StatCards";
@@ -8,15 +8,7 @@ import TransactionHistory from "../components/TransactionHistory";
 import BottomNav from "../components/BottomNav";
 
 export default function Dashboard() {
-  const currentUser = useRequireAuth();
-
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
-        <div className="text-white text-xl font-semibold">Loading...</div>
-      </div>
-    );
-  }
+  const { currentUser } = useAuth();
 
   return (
     <>

@@ -40,6 +40,24 @@ const registerSchema = Joi.object({
   })
 });
 
+const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string().required().messages({
+    'string.empty': 'Current password is required'
+  }),
+  newPassword: passwordSchema,
+  confirmPassword: Joi.string().required().valid(Joi.ref('newPassword')).messages({
+    'any.only': 'Passwords do not match',
+    'string.empty': 'Please confirm your new password'
+  })
+}).custom((value) => {
+  if (value.currentPassword === value.newPassword) {
+    throw new Error('New password cannot be the same as current password');
+  }
+  return value;
+}).messages({
+  'any.custom': 'New password cannot be the same as current password'
+});
+
 /**
  * Convert Joi validation error details into a keyed error object.
  *
@@ -71,6 +89,11 @@ export const validateLoginForm = (formData) => {
 
 export const validateRegisterForm = (formData) => {
   const { error } = registerSchema.validate(formData, { abortEarly: false, allowUnknown: false });
+  return formatErrors(error);
+};
+
+export const validateChangePasswordForm = (formData) => {
+  const { error } = changePasswordSchema.validate(formData, { abortEarly: false, allowUnknown: false });
   return formatErrors(error);
 };
 

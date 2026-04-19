@@ -1,4 +1,4 @@
-import { useRequireAuth } from "../hooks/useRequireAuth.js";
+import { useAuth } from "../hooks/useAuth.js";
 import useLocalStorage from "../hooks/useLocalStorage.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
@@ -183,15 +183,7 @@ function TopUpContent() {
 
 /* ── ROOT APP SHELL ── */
 export default function TopUp() {
-  const currentUser = useRequireAuth();
-
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
-        <div className="text-white text-xl font-semibold">Loading...</div>
-      </div>
-    );
-  }
+  const { currentUser } = useAuth();
 
   return (
     <div
