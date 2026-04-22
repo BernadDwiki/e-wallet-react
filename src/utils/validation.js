@@ -113,3 +113,17 @@ export const validateEmail = (email) => {
   return '';
 };
 
+/**
+ * Validate password.
+ *
+ * @param {string} password - Password to validate.
+ * @returns {string} Error message if invalid, empty string if valid.
+ */
+export const validatePassword = (password) => {
+  const { error } = passwordSchema.validate(password);
+  if (error) {
+    return error.details[0].context?.message || error.details[0].message;
+  }
+  return '';
+};
+

@@ -54,14 +54,19 @@ export default function TransactionList({ initialSearch = '' }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState(transactions);
   const [search, setSearch] = useState(searchParams.get('search') || initialSearch);
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
+  const itemsPerPage = 7;
 
   const handleSearchChange = (value) => {
     setSearch(value);
+    setCurrentPage(1); // Reset ke halaman 1 saat search
     const newParams = new URLSearchParams(searchParams);
     if (value.trim()) {
       newParams.set('search', value);
+      newParams.set('page', '1');
     } else {
       newParams.delete('search');
+      newParams.delete('page');
     }
     setSearchParams(newParams);
   };
@@ -71,6 +76,23 @@ export default function TransactionList({ initialSearch = '' }) {
       t.name.toLowerCase().includes(search.toLowerCase()) ||
       t.phone.includes(search)
   );
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filtered.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= 9) {
+      setCurrentPage(page);
+      const newParams = new URLSearchParams(searchParams);
+      if (page === 1) {
+        newParams.delete('page');
+      } else {
+        newParams.set('page', page.toString());
+      }
+      setSearchParams(newParams);
+    }
+  };
 
   const handleDelete = (id) => setData((d) => d.filter((t) => t.id !== id));
 
@@ -103,7 +125,7 @@ export default function TransactionList({ initialSearch = '' }) {
           Tidak ada transaksi ditemukan
         </div>
       ) : (
-        filtered.map((tx, i) => (
+        paginatedData.map((tx, i) => (
           <TransactionRow
             key={tx.id}
             tx={tx}
@@ -116,11 +138,13 @@ export default function TransactionList({ initialSearch = '' }) {
       {/* Pagination */}
       <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
         <span className="text-xs text-gray-400">
-          Show 5 History of 100 History
+          Show {filtered.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, filtered.length)} of {filtered.length} History
         </span>
         <div className="flex items-center gap-1">
           <button
-            className="min-w-[30px] h-[30px] rounded-md border-none bg-transparent text-[13px] font-medium text-gray-500 cursor-pointer hover:text-[#2D39F5] px-2 transition-colors"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="min-w-[30px] h-[30px] rounded-md border-none bg-transparent text-[13px] font-medium text-gray-500 cursor-pointer hover:text-[#2D39F5] px-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Prev
           </button>
@@ -129,7 +153,12 @@ export default function TransactionList({ initialSearch = '' }) {
             (n) => (
               <button
                 key={n}
-                className="min-w-[30px] h-[30px] rounded-md border-none bg-transparent text-[13px] font-medium text-gray-500 cursor-pointer hover:bg-gray-100 hover:text-gray-900 px-2 transition-colors"
+                onClick={() => handlePageChange(n)}
+                className={`min-w-[30px] h-[30px] rounded-md border-none text-[13px] font-medium px-2 transition-colors ${
+                  n === currentPage
+                    ? "bg-[#2D39F5] text-white cursor-default"
+                    : "bg-transparent text-gray-500 cursor-pointer hover:bg-gray-100 hover:text-gray-900"
+                }`}
               >
                 {n}
               </button>
@@ -137,7 +166,9 @@ export default function TransactionList({ initialSearch = '' }) {
           )}
 
           <button
-            className="min-w-[30px] h-[30px] rounded-md border-none bg-transparent text-[13px] font-medium text-gray-500 cursor-pointer hover:text-[#2D39F5] px-2 transition-colors"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === 9}
+            className="min-w-[30px] h-[30px] rounded-md border-none bg-transparent text-[13px] font-medium text-gray-500 cursor-pointer hover:text-[#2D39F5] px-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>

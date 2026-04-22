@@ -63,11 +63,11 @@ export default function ChangePin() {
         {/* Page Header */}
         <div className="flex items-center gap-2.5">
           <img
-            src={`${ASSETS}/Password.png`}
+            src={`${ASSETS}/2 User.png`}
             alt=""
             className="w-5 h-5 object-contain"
           />
-          <h1 className="text-lg font-extrabold text-gray-900">Change Pin</h1>
+          <h1 className="text-lg font-extrabold text-gray-900">Profile</h1>
         </div>
 
         {/* Card */}
@@ -82,7 +82,7 @@ export default function ChangePin() {
           </p>
 
           {/* PIN Inputs */}
-          <div className="flex gap-4 mt-2">
+          <div className="flex flex-wrap justify-center gap-4 mt-2">
             {pins.map((val, i) => (
               <input
                 key={i}
@@ -95,7 +95,7 @@ export default function ChangePin() {
                 disabled={isSaving}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
-                className={`w-14 h-14 text-center text-xl font-bold border rounded-xl outline-none ${val ? 'border-[#2D39F5]' : 'border-gray-300'} focus:border-[#2D39F5]`}
+                className={`w-12 sm:w-14 h-12 sm:h-14 text-center text-xl sm:text-xl font-bold bg-transparent border-b-2 rounded-none outline-none transition-colors duration-200 ${val ? 'border-[#2D39F5]' : 'border-gray-300'} focus:border-[#2D39F5] placeholder:text-gray-300`}
               />
             ))}
           </div>

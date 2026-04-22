@@ -25,7 +25,9 @@ function App() {
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
-            <Route path="enter-pin" element={<EnterPin />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="enter-pin" element={<EnterPin />} />
+            </Route>
           </Route>
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />

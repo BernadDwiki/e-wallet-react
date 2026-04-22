@@ -30,7 +30,7 @@ function TopUpContent() {
       {/* Page Header */}
       <div className="flex items-center gap-2.5">
         <img
-          src={`${ASSETS}/Upload.png`}
+          src={`${ASSETS}/Upload(1).png`}
           alt=""
           className="w-5 h-5 object-contain"
         />

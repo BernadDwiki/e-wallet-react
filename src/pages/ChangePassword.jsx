@@ -93,11 +93,11 @@ function ChangePasswordContent() {
     <main className="p-7 flex flex-col gap-5 bg-[#F5F6FA] overflow-auto">
       <div className="flex items-center gap-2.5">
         <img
-          src={`${ASSETS}/Password.png`}
+          src={`${ASSETS}/2 User.png`}
           alt=""
           className="w-5 h-5 object-contain"
         />
-        <h1 className="text-lg font-extrabold text-gray-900">Change Password</h1>
+        <h1 className="text-lg font-extrabold text-gray-900">Profile</h1>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl p-7 flex flex-col gap-4">

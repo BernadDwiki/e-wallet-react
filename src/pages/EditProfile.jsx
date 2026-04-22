@@ -158,7 +158,7 @@ export default function EditProfile() {
         {/* Page Header */}
         <div className="flex items-center gap-3">
           <img
-            src={`${ASSETS}/2 User.png`}
+            src={`${ASSETS}/2 User(1).png`}
             alt=""
             className="w-5 h-5 object-contain"
           />

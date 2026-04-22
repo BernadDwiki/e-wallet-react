@@ -1,0 +1,29 @@
+FROM ubuntu:resolute
+
+# Install SSH server
+RUN apt update && apt install -y openssh-server sudo
+
+# Buat user (ganti nama kamu)
+RUN useradd -m -s /bin/bash bernadd
+
+# Buat folder SSH
+RUN mkdir -p /home/bernadd/.ssh
+
+# Copy public key ke container
+COPY id_rsa.pub /home/bernadd/.ssh/authorized_keys
+
+# Set permission yang benar (PENTING)
+RUN chown -R bernadd:bernadd /home/bernadd/.ssh && \
+    chmod 700 /home/bernadd/.ssh && \
+    chmod 600 /home/bernadd/.ssh/authorized_keys
+
+# Disable root login & password login
+RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config && \
+    sed -i 's/#PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+
+# Expose port SSH
+EXPOSE 22
+
+# Start SSH server
+CMD ["/usr/sbin/sshd", "-D"]

@@ -29,8 +29,7 @@ export const useAuth = () => {
       email: user.email,
       name: user.name || user.email.split('@')[0],
       phone: user.phone || '',
-      income: user.income || 0,
-      expense: user.expense || 0,
+      pin: user.pin || ''
     };
 
     dispatch(loginAction(sessionUser));
@@ -48,8 +47,7 @@ export const useAuth = () => {
       email: user.email,
       name: user.name || user.email.split('@')[0],
       phone: user.phone || '',
-      income: user.income || 0,
-      expense: user.expense || 0,
+      pin: user.pin || ''
     }));
   };
 
@@ -104,6 +102,7 @@ export const useAuth = () => {
     }
     const updatedUser = { ...user, pin: newPin };
     context.updateUser(updatedUser);
+    syncCurrentUser(updatedUser);
     return updatedUser;
   };
 

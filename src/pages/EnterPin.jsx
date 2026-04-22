@@ -1,21 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
+import Modal from "../components/Modal";
 
 export default function EnterPin() {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { changePin } = useAuth();
   const [pins, setPins] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
-
-  // Redirect if not logged in or already has PIN
-  useEffect(() => {
-    if (!currentUser) {
-      navigate("/auth/login");
-    } else if (currentUser.pin) {
-      navigate("/dashboard");
-    }
-  }, [currentUser, navigate]);
+  const [modal, setModal] = useState({ isOpen: false, type: "", message: "" });
 
   const handleChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
@@ -50,30 +43,37 @@ export default function EnterPin() {
   const handleSubmit = () => {
     const pin = pins.join("");
     if (pin.length < 6) {
-      alert("Please enter all 6 digits.");
+      setModal({
+        isOpen: true,
+        type: "error",
+        message: "Please enter all 6 digits.",
+      });
       return;
     }
 
-    // Save PIN to user data
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const userIndex = users.findIndex(user => user.id === currentUser.id);
-    if (userIndex !== -1) {
-      users[userIndex].pin = pin;
-      localStorage.setItem('users', JSON.stringify(users));
-    }
+    // Save PIN via authentication context
+    changePin(pin);
 
-    alert(`PIN saved successfully!`);
-    navigate("/dashboard");
+    setModal({
+      isOpen: true,
+      type: "success",
+      message: "PIN saved successfully!",
+    });
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 2000);
+  };
+
+  const onCloseModal = () => {
+    setModal({ isOpen: false, type: "", message: "" });
   };
 
   const isComplete = pins.every((p) => p !== "");
 
   return (
     <div className="flex h-screen bg-gray-100">
-
       {/* LEFT SIDE */}
       <div className="w-full md:w-1/2 bg-white flex flex-col justify-center px-10 py-16 md:px-24">
-
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
           <img src="/assets/dompet1.png" alt="" className="w-8 h-8" />
@@ -85,7 +85,8 @@ export default function EnterPin() {
           Enter Your Pin 👋
         </h1>
         <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-          Please save your pin because this is important for your account security.
+          Please save your pin because this is important for your account
+          security.
         </p>
 
         {/* PIN Inputs */}
@@ -103,9 +104,10 @@ export default function EnterPin() {
               className={`
                 w-full h-12 text-center text-2xl font-bold border-b-2 bg-transparent
                 outline-none transition-colors duration-200
-                ${pin
-                  ? "border-indigo-500 text-indigo-500"
-                  : "border-gray-200 text-gray-800"
+                ${
+                  pin
+                    ? "border-indigo-500 text-indigo-500"
+                    : "border-gray-200 text-gray-800"
                 }
                 focus:border-indigo-500
               `}
@@ -119,9 +121,10 @@ export default function EnterPin() {
           className={`
             w-full py-3 rounded-xl text-white font-semibold text-sm
             transition-all duration-200
-            ${isComplete
-              ? "bg-indigo-500 hover:bg-indigo-600 active:scale-95"
-              : "bg-indigo-300 cursor-not-allowed"
+            ${
+              isComplete
+                ? "bg-indigo-500 hover:bg-indigo-600 active:scale-95"
+                : "bg-indigo-300 cursor-not-allowed"
             }
           `}
           disabled={!isComplete}
@@ -143,6 +146,30 @@ export default function EnterPin() {
         <img src="/assets/enterpin1.png" alt="" className="w-149" />
       </div>
 
+      {/* Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={onCloseModal}
+        title={modal.type === "success" ? "Success" : "Error"}
+      >
+        <div
+          className={`p-4 rounded-lg ${
+            modal.type === "success"
+              ? "bg-green-50 text-green-800"
+              : "bg-red-50 text-red-800"
+          }`}
+        >
+          <p className="text-center">{modal.message}</p>
+        </div>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={onCloseModal}
+            className="px-4 py-2 bg-[#4a6cf7] text-white rounded-lg hover:bg-[#3a5ce6] transition-colors"
+          >
+            OK
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
