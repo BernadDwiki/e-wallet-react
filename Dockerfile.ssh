@@ -3,7 +3,7 @@ FROM ubuntu:resolute
 # Install SSH server
 RUN apt update && apt install -y openssh-server sudo
 
-# Buat user (ganti nama kamu)
+# Buat user 
 RUN useradd -m -s /bin/bash bernadd
 
 # Buat folder SSH
@@ -12,7 +12,7 @@ RUN mkdir -p /home/bernadd/.ssh
 # Copy public key ke container
 COPY id_rsa.pub /home/bernadd/.ssh/authorized_keys
 
-# Set permission yang benar (PENTING)
+# Set permission
 RUN chown -R bernadd:bernadd /home/bernadd/.ssh && \
     chmod 700 /home/bernadd/.ssh && \
     chmod 600 /home/bernadd/.ssh/authorized_keys
