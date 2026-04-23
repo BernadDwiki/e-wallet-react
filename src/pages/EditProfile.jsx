@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
+import Modal from "../components/Modal";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
@@ -37,6 +38,12 @@ function ProfileCard() {
   const [phone, setPhone] = React.useState(currentUser?.phone || "");
   const [email, setEmail] = React.useState(currentUser?.email || "");
   const [isSaving, setIsSaving] = React.useState(false);
+  const [modal, setModal] = React.useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info"
+  });
 
   React.useEffect(() => {
     setName(currentUser?.name || "");
@@ -48,12 +55,26 @@ function ProfileCard() {
     setIsSaving(true);
     try {
       await updateUser({ name, phone, email });
-      alert("Profile berhasil diperbarui.");
+      setModal({
+        isOpen: true,
+        title: "Profile Updated",
+        message: "Profile berhasil diperbarui.",
+        type: "success"
+      });
     } catch (error) {
-      alert(error.message || "Gagal memperbarui profil.");
+      setModal({
+        isOpen: true,
+        title: "Update Failed",
+        message: error.message || "Gagal memperbarui profil.",
+        type: "error"
+      });
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }));
   };
 
   return (
@@ -125,6 +146,24 @@ function ProfileCard() {
       >
         {isSaving ? "Saving..." : "Save Profile"}
       </button>
+
+      <Modal isOpen={modal.isOpen} onClose={closeModal} title={modal.title}>
+        <div className={`p-4 rounded-lg ${
+          modal.type === 'success' ? 'bg-green-50 text-green-800' :
+          modal.type === 'error' ? 'bg-red-50 text-red-800' :
+          'bg-blue-50 text-blue-800'
+        }`}>
+          <p className="text-center">{modal.message}</p>
+        </div>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={closeModal}
+            className="px-4 py-2 bg-[#2D39F5] text-white rounded-lg hover:bg-[#233cbd] transition-colors"
+          >
+            OK
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

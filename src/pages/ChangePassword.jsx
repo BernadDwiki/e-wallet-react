@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth.js";
 import { validateChangePasswordForm } from "../utils/validation.js";
+import Modal from "../components/Modal";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
@@ -41,12 +42,18 @@ function PasswordField({ label, placeholder, value, onChange, error }) {
 }
 
 function ChangePasswordContent() {
-  const { changePassword, currentUser } = useAuth();
+  const { changePassword } = useAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info"
+  });
 
   const handleChange = (field, value) => {
     if (field === 'currentPassword') setCurrentPassword(value);
@@ -71,6 +78,12 @@ function ChangePasswordContent() {
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
+      setModal({
+        isOpen: true,
+        title: "Validation Error",
+        message: "Please fix the highlighted form fields before submitting.",
+        type: "error"
+      });
       return;
     }
 
@@ -78,15 +91,29 @@ function ChangePasswordContent() {
     setIsSaving(true);
     try {
       await changePassword(currentPassword, newPassword);
-      alert("Password berhasil diubah.");
+      setModal({
+        isOpen: true,
+        title: "Password Updated",
+        message: "Password berhasil diubah.",
+        type: "success"
+      });
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
-      alert(error.message || "Gagal mengubah password.");
+      setModal({
+        isOpen: true,
+        title: "Update Failed",
+        message: error.message || "Gagal mengubah password.",
+        type: "error"
+      });
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }));
   };
 
   return (
@@ -133,6 +160,24 @@ function ChangePasswordContent() {
         >
           {isSaving ? "Saving..." : "Submit"}
         </button>
+
+        <Modal isOpen={modal.isOpen} onClose={closeModal} title={modal.title}>
+          <div className={`p-4 rounded-lg ${
+            modal.type === 'success' ? 'bg-green-50 text-green-800' :
+            modal.type === 'error' ? 'bg-red-50 text-red-800' :
+            'bg-blue-50 text-blue-800'
+          }`}>
+            <p className="text-center">{modal.message}</p>
+          </div>
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={closeModal}
+              className="px-4 py-2 bg-[#2D39F5] text-white rounded-lg hover:bg-[#233cbd] transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        </Modal>
       </div>
     </main>
   );

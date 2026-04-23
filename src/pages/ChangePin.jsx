@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useAuth } from "../hooks/useAuth.js";
+import Modal from "../components/Modal";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
@@ -10,6 +11,12 @@ export default function ChangePin() {
   const { currentUser, changePin } = useAuth();
   const [pins, setPins] = useState(Array(6).fill(''));
   const [isSaving, setIsSaving] = useState(false);
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info"
+  });
   const inputRefs = useRef([]);
 
   const handleChange = (index, value) => {
@@ -31,19 +38,38 @@ export default function ChangePin() {
   const handleSubmit = async () => {
     const pin = pins.join('');
     if (pin.length < 6) {
-      alert('Please fill all 6 PIN digits.');
+      setModal({
+        isOpen: true,
+        title: "Incomplete PIN",
+        message: "Please fill all 6 PIN digits.",
+        type: "error"
+      });
       return;
     }
     setIsSaving(true);
     try {
       await changePin(pin);
-      alert('PIN berhasil diperbarui.');
+      setModal({
+        isOpen: true,
+        title: "PIN Updated",
+        message: "PIN berhasil diperbarui.",
+        type: "success"
+      });
       setPins(Array(6).fill(''));
     } catch (error) {
-      alert(error.message || 'Gagal memperbarui PIN.');
+      setModal({
+        isOpen: true,
+        title: "Update Failed",
+        message: error.message || 'Gagal memperbarui PIN.',
+        type: "error"
+      });
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }));
   };
 
   return (
@@ -108,6 +134,24 @@ export default function ChangePin() {
           >
             {isSaving ? 'Saving...' : 'Submit'}
           </button>
+
+          <Modal isOpen={modal.isOpen} onClose={closeModal} title={modal.title}>
+            <div className={`p-4 rounded-lg ${
+              modal.type === 'success' ? 'bg-green-50 text-green-800' :
+              modal.type === 'error' ? 'bg-red-50 text-red-800' :
+              'bg-blue-50 text-blue-800'
+            }`}>
+              <p className="text-center">{modal.message}</p>
+            </div>
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 bg-[#2D39F5] text-white rounded-lg hover:bg-[#233cbd] transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </Modal>
         </div>
       </main>
 
