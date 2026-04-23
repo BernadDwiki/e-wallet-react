@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import Topbar from '../components/Topbar';
 import Sidebar from '../components/Sidebar';
 import { PersonInfo, AmountSection, NotesSection } from '../components/TransferSections';
 import BottomNav from '../components/BottomNav';
 import PinModal from '../components/PinModal';
+import TransferSuccessModal from '../components/TransferSuccessModal';
+import TransferFailedModal from '../components/TransferFailedModal';
 import React from 'react';
 
 function Steps() {
@@ -37,8 +40,20 @@ function Steps() {
 }
 
 export default function TransferNominal() {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFailedModal, setShowFailedModal] = useState(false);
+
+  const handlePinSubmit = (pin) => {
+    if (pin === currentUser.pin) {
+      setShowSuccessModal(true);
+    } else {
+      setShowFailedModal(true);
+    }
+    setShowPinModal(false);
+  };
 
   return (
     <div
@@ -77,6 +92,33 @@ export default function TransferNominal() {
         <PinModal
           isOpen={showPinModal}
           onClose={() => setShowPinModal(false)}
+          onPinSubmit={handlePinSubmit}
+          recipientName="Ghaluh 1"
+        />
+
+        {/* Modal Transfer Success */}
+        <TransferSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          onTransferAgain={() => {
+            setShowSuccessModal(false);
+            navigate('/transfer');
+          }}
+          recipientName="Ghaluh 1"
+        />
+
+        {/* Modal Transfer Failed */}
+        <TransferFailedModal
+          isOpen={showFailedModal}
+          onClose={() => setShowFailedModal(false)}
+          onTryAgain={() => {
+            setShowFailedModal(false);
+            setShowPinModal(true);
+          }}
+          onBackToDashboard={() => {
+            setShowFailedModal(false);
+            navigate('/dashboard');
+          }}
           recipientName="Ghaluh 1"
         />
       </main>

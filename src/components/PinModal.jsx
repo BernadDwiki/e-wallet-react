@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 import Modal from './Modal';
 
-export default function PinModal({ isOpen, onClose, recipientName = 'Ghaluh 1' }) {
+export default function PinModal({ isOpen, onClose, onPinSubmit, recipientName = 'Ghaluh 1' }) {
   const [pin, setPin] = useState('');
-  const inputRef = useRef(null);
+  const inputRefs = useRef([]);
 
   const handleClose = () => {
     setPin('');
@@ -12,21 +12,9 @@ export default function PinModal({ isOpen, onClose, recipientName = 'Ghaluh 1' }
 
   const handleNext = () => {
     if (pin.length < 6) return;
-    // TODO: validasi PIN dan lanjut ke step berikutnya
-    console.log('PIN submitted:', pin);
+    // Validasi PIN dan lanjut ke step berikutnya
+    onPinSubmit(pin);
     handleClose();
-  };
-
-  const handlePinChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 6);
-    setPin(raw);
-  };
-
-  const handlePinKeyDown = (e) => {
-    if (e.key === 'Backspace' && pin.length > 0) {
-      e.preventDefault();
-      setPin((prev) => prev.slice(0, -1));
-    }
   };
 
   const pinDigits = Array.from({ length: 6 }, (_, idx) => pin[idx] || '');
@@ -56,28 +44,34 @@ export default function PinModal({ isOpen, onClose, recipientName = 'Ghaluh 1' }
         </div>
 
         {/* Input PIN */}
-        <div
-          className="grid grid-cols-6 gap-3 py-3"
-          onClick={() => inputRef.current?.focus()}
-        >
-          <input
-            ref={inputRef}
-            type="text"
-            inputMode="numeric"
-            maxLength={6}
-            value={pin}
-            onChange={handlePinChange}
-            onKeyDown={handlePinKeyDown}
-            className="absolute opacity-0 pointer-events-none"
-            autoFocus
-          />
+        <div className="grid grid-cols-6 gap-3 py-3">
           {pinDigits.map((digit, index) => (
-            <div
+            <input
               key={index}
-              className={`h-14 border-b-2 flex items-end justify-center pb-2 text-2xl font-bold ${digit ? 'border-[#2D39F5] text-gray-900' : 'border-gray-300 text-gray-300'}`}
-            >
-              {digit || ''}
-            </div>
+              ref={(el) => (inputRefs.current[index] = el)}
+              type="password"
+              inputMode="numeric"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 1) {
+                  const newPin = pin.split('');
+                  newPin[index] = value;
+                  setPin(newPin.join(''));
+                  if (value && index < 5) {
+                    inputRefs.current[index + 1]?.focus();
+                  }
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Backspace' && !digit && index > 0) {
+                  inputRefs.current[index - 1]?.focus();
+                }
+              }}
+              className={`h-14 border-b-2 flex items-end justify-center pb-2 text-2xl font-bold text-center bg-transparent outline-none ${digit ? 'border-[#2D39F5] text-gray-900' : 'border-gray-300 text-gray-300'}`}
+              autoFocus={index === 0}
+            />
           ))}
         </div>
 
