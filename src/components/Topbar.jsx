@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
+import LogoutConfirmModal from "./LogoutConfirmModal";
 
 const ASSETS = {
   logo: "./assets/dompet1.png",
@@ -20,55 +21,70 @@ export default function Topbar({ currentUser }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setMenuOpen(false);
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutModal(false);
     logout();
     navigate("/auth/login");
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 flex items-center justify-between px-7 h-16 fixed top-0 left-0 right-0 z-50 shadow-sm">
-      <div className="flex items-center gap-2 no-underline font-extrabold text-[17px] text-[#3b4afa]">
-        <img src={ASSETS.logo} alt="E-Wallet Logo" className="w-7 h-7 object-contain" />
-        E-Wallet
-      </div>
+    <>
+      <header className="bg-white border-b border-gray-200 flex items-center justify-between px-7 h-16 fixed top-0 left-0 right-0 z-50 shadow-sm">
+        <div className="flex items-center gap-2 no-underline font-extrabold text-[17px] text-[#3b4afa]">
+          <img src={ASSETS.logo} alt="E-Wallet Logo" className="w-7 h-7 object-contain" />
+          E-Wallet
+        </div>
 
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          className="flex items-center gap-2.5 rounded-full transition-colors hover:bg-gray-100 px-2 py-1"
-        >
-          <span className="text-sm font-semibold text-gray-800 hidden sm:block">{currentUser?.name || 'User'}</span>
-          <img src={ASSETS.avatar} alt="User Avatar" className="w-10 h-10 rounded-full object-cover border-2 border-gray-200" />
-          <img src={ASSETS.chevron} alt="Expand" className={`w-4 h-4 object-contain opacity-45 transition-transform ${menuOpen ? "rotate-180" : "rotate-0"}`} />
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            className="flex items-center gap-2.5 rounded-full transition-colors hover:bg-gray-100 px-2 py-1"
+          >
+            <span className="text-sm font-semibold text-gray-800 hidden sm:block">{currentUser?.name || 'User'}</span>
+            <img src={ASSETS.avatar} alt="User Avatar" className="w-10 h-10 rounded-full object-cover border-2 border-gray-200" />
+            <img src={ASSETS.chevron} alt="Expand" className={`w-4 h-4 object-contain opacity-45 transition-transform ${menuOpen ? "rotate-180" : "rotate-0"}`} />
+          </button>
 
-        {menuOpen && (
-          <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
-            <a
-              href="#"
-              className="group flex items-center gap-3 px-4 py-3 text-sm text-gray-900 hover:bg-blue-600 hover:text-white transition-colors"
-              onClick={(e) => e.preventDefault()}
-            >
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 transition-colors">
-                <img src={ASSETS.profile} alt="Profile icon" className="w-4 h-4 object-contain" />
-              </span>
-              Profile
-            </a>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="group flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-900 hover:bg-blue-600 hover:text-white transition-colors"
-            >
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 transition-colors">
-                <img src={ASSETS.logout} alt="Logout icon" className="w-4 h-4 object-contain" />
-              </span>
-              Keluar
-            </button>
-          </div>
-        )}
-      </div>
-    </header>
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+              <a
+                href="#"
+                className="group flex items-center gap-3 px-4 py-3 text-sm text-gray-900 hover:bg-blue-600 hover:text-white transition-colors"
+                onClick={(e) => e.preventDefault()}
+              >
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 transition-colors">
+                  <img src={ASSETS.profile} alt="Profile icon" className="w-4 h-4 object-contain" />
+                </span>
+                Profile
+              </a>
+              <button
+                type="button"
+                onClick={handleLogoutClick}
+                className="group flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-900 hover:bg-blue-600 hover:text-white transition-colors"
+              >
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 transition-colors">
+                  <img src={ASSETS.logout} alt="Logout icon" className="w-4 h-4 object-contain" />
+                </span>
+                Keluar
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
+
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleConfirmLogout}
+      />
+    </>
   );
 }

@@ -21,3 +21,15 @@
     @apply text-[#4a6cf7];
   }
 }
+
+/* Hide browser default password toggle button */
+input[type="password"]::-ms-reveal {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+  pointer-events: none !important;
+  height: 0;
+  width: 0;
+}

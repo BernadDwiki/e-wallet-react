@@ -29,8 +29,10 @@ export const useAuth = () => {
       email: user.email,
       name: user.name || user.email.split('@')[0],
       phone: user.phone || '',
-      pin: user.pin || ''
-    };
+      pin: user.pin || '',
+      balance: user.balance || 0,
+      income: user.income || 0,
+      expense: user.expense || 0    };
 
     dispatch(loginAction(sessionUser));
     return user;
@@ -47,7 +49,10 @@ export const useAuth = () => {
       email: user.email,
       name: user.name || user.email.split('@')[0],
       phone: user.phone || '',
-      pin: user.pin || ''
+      pin: user.pin || '',
+      balance: user.balance || 0,
+      income: user.income || 0,
+      expense: user.expense || 0
     }));
   };
 
@@ -106,6 +111,52 @@ export const useAuth = () => {
     return updatedUser;
   };
 
+  const topup = (amount) => {
+    if (!currentUser) {
+      throw new Error('No current user');
+    }
+    if (amount <= 0) {
+      throw new Error('Topup amount must be positive');
+    }
+    const user = context.users.find((userItem) => userItem.id === currentUser.id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const updatedUser = {
+      ...user,
+      balance: (user.balance || 0) + amount,
+      income: (user.income || 0) + amount
+    };
+    context.updateUser(updatedUser);
+    syncCurrentUser(updatedUser);
+    return updatedUser;
+  };
+
+  const transfer = (amount) => {
+    if (!currentUser) {
+      throw new Error('No current user');
+    }
+    if (amount <= 0) {
+      throw new Error('Transfer amount must be positive');
+    }
+    const user = context.users.find((userItem) => userItem.id === currentUser.id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const currentBalance = user.balance || 0;
+    if (currentBalance < amount) {
+      throw new Error('Insufficient balance');
+    }
+    const updatedUser = {
+      ...user,
+      balance: currentBalance - amount,
+      expense: (user.expense || 0) + amount
+    };
+    context.updateUser(updatedUser);
+    syncCurrentUser(updatedUser);
+    return updatedUser;
+  };
+
   return {
     ...context,
     currentUser,
@@ -114,5 +165,7 @@ export const useAuth = () => {
     updateUser,
     changePassword,
     changePin,
+    topup,
+    transfer,
   };
 };

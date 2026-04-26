@@ -1,5 +1,7 @@
 import { useLayoutEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { setSelectedPerson } from '../store/slice/transferSlice.js';
 import { useAuth } from "../hooks/useAuth.js";
 import useLocalStorage from "../hooks/useLocalStorage.js";
 import Topbar from "../components/Topbar";
@@ -21,6 +23,7 @@ export default function TransferPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser } = useAuth();
+  const dispatch = useDispatch();
   const [search, setSearch] = useLocalStorage("transfer_search", searchParams.get('search') || "");
   const [starred, setStarred] = useLocalStorage("transfer_starred", {});
 
@@ -40,6 +43,11 @@ export default function TransferPage() {
   const toggleStar = (id) =>
     setStarred((prev) => ({ ...prev, [id]: !prev[id] }));
 
+  const handleSelectPerson = (person) => {
+    dispatch(setSelectedPerson(person));
+    navigate('/transfer-nominal');
+  };
+
   const handleSearchChange = (value) => {
     setSearch(value);
     if (value.trim()) {
@@ -50,25 +58,18 @@ export default function TransferPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      <Topbar currentUser={currentUser} />
+    <div
+      className="grid grid-cols-1 md:grid-cols-[196px_1fr] min-h-screen font-[Plus_Jakarta_Sans,sans-serif] bg-[#F5F6FA]"
+      style={{ gridTemplateRows: '64px 1fr' }}
+    >
+      <div className="col-span-1 md:col-span-2">
+        <Topbar currentUser={currentUser} />
+      </div>
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[196px_1fr]" style={{ gridTemplateRows: "1fr", gridTemplateAreas: '"sidebar main"', minHeight: "calc(100vh - 64px)", marginTop: "64px" }}>
-        <div className="hidden md:block" style={{ gridArea: "sidebar" }}>
-          <Sidebar />
-        </div>
-
-        <main
-          style={{
-            gridArea: "main",
-            padding: "24px 24px 24px 20px",
-            display: "grid",
-            gridTemplateColumns: "1fr",
-            gridTemplateRows: "auto auto 1fr",
-            gap: "16px",
-            alignItems: "start",
-          }}
-        >
+      <main className="p-7 flex flex-col gap-5 bg-[#F5F6FA]">
 
           {/* Page Header */}
           <div className="flex items-center gap-2.5">
@@ -77,28 +78,28 @@ export default function TransferPage() {
           </div>
 
           {/* Step Indicator */}
-          <div className="flex items-center">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1 md:gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
               <div className="w-6 h-6 rounded-full bg-[#2D39F5] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</div>
-              <span className="text-[13px] font-semibold text-gray-900">Find People</span>
+              <span className="text-[11px] md:text-[13px] font-semibold text-gray-900">Find People</span>
             </div>
-            <div className="flex-1 max-w-[80px] mx-2.5 border-t-2 border-dashed border-gray-300" />
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/transfer-nominal')}>
-              <div className="w-6 h-6 rounded-full bg-gray-300 hover:bg-[#2D39F5] text-gray-500 hover:text-white text-xs font-bold flex items-center justify-center flex-shrink-0 transition-colors">2</div>
-              <span className="text-[13px] font-semibold text-gray-400 hover:text-gray-900 transition-colors">Set Nominal</span>
+            <div className="w-10 md:w-20 mx-1 md:mx-2.5 border-t-2 border-dashed border-gray-300 flex-shrink-0" />
+            <div className="flex items-center gap-1 md:gap-2">
+              <div className="w-6 h-6 rounded-full bg-gray-300 text-gray-500 text-xs font-bold flex items-center justify-center flex-shrink-0">2</div>
+              <span className="text-[11px] md:text-[13px] font-semibold text-gray-400">Set Nominal</span>
             </div>
-            <div className="flex-1 max-w-[80px] mx-2.5 border-t-2 border-dashed border-gray-300" />
-            <div className="flex items-center gap-2">
+            <div className="w-10 md:w-20 mx-1 md:mx-2.5 border-t-2 border-dashed border-gray-300 flex-shrink-0" />
+            <div className="flex items-center gap-1 md:gap-2">
               <div className="w-6 h-6 rounded-full bg-gray-300 text-gray-500 text-xs font-bold flex items-center justify-center flex-shrink-0">3</div>
-              <span className="text-[13px] font-semibold text-gray-400">Finish</span>
+              <span className="text-[11px] md:text-[13px] font-semibold text-gray-400">Finish</span>
             </div>
           </div>
 
           {/* Content Card */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 flex-1">
+          <div className="bg-white rounded-2xl border border-gray-200 p-4 md:p-6 flex-1">
 
             {/* Find People Header */}
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
+            <div className="flex flex-col gap-4 mb-5">
               <div>
                 <div className="text-base font-bold text-gray-900 mb-1">Find People</div>
                 <div className="text-xs text-gray-400">
@@ -107,7 +108,7 @@ export default function TransferPage() {
               </div>
 
               {/* Search Box */}
-              <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-[9px] min-w-[240px] bg-white">
+              <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-[9px] bg-white">
                 <input
                   type="text"
                   placeholder="Enter Number Or Full Name"
@@ -121,65 +122,72 @@ export default function TransferPage() {
             </div>
 
             {/* People Table */}
-            <table className="w-full border-collapse">
-              <tbody>
-                {filtered.map((person) => (
-                  <tr
-                    key={person.id}
-                    className={`border-b border-gray-200 last:border-b-0 cursor-pointer transition-colors hover:bg-gray-100
-                      ${person.highlighted ? "bg-[#EEF0FF]" : "bg-white"}`}
-                  >
-                    {/* Avatar */}
-                    <td className="w-[60px] py-3 pr-2 pl-0">
-                      <div onClick={() => navigate('/transfer-nominal')} className="cursor-pointer">
-                        <img
-                          src={person.avatar}
-                          alt={person.name}
-                          className="w-11 h-11 rounded-[10px] object-cover block"
-                        />
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <tbody>
+                  {filtered.map((person, index) => (
+                    <tr
+                      key={person.id}
+                      onClick={() => handleSelectPerson(person)}
+                      className={`border-b border-gray-200 last:border-b-0 cursor-pointer transition-colors hover:bg-gray-100 ${
+                        person.highlighted
+                          ? "bg-[#EEF0FF]"
+                          : index % 2 === 0
+                          ? "bg-white"
+                          : "bg-gray-50"
+                      }`}
+                    >
+                      {/* Avatar */}
+                      <td className="w-[60px] py-3 pr-2 pl-0">
+                        <div onClick={() => navigate('/transfer-nominal')} className="cursor-pointer">
+                          <img
+                            src={person.avatar}
+                            alt={person.name}
+                            className="w-11 h-11 rounded-[10px] object-cover block"
+                          />
+                        </div>
+                      </td>
 
-                    {/* Name */}
-                    <td className="py-3 px-4 text-center text-sm font-semibold text-gray-900">
-                      {person.name}
-                    </td>
+                      {/* Name */}
+                      <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-900">
+                        {person.name}
+                      </td>
 
-                    {/* Phone */}
-                    <td className="py-3 px-4 text-[13px] text-gray-500">
-                      {person.phone}
-                    </td>
+                      {/* Phone - hidden on mobile, visible on md */}
+                      <td className="hidden md:table-cell py-3 px-4 text-[13px] text-gray-500">
+                        {person.phone}
+                      </td>
 
-                    {/* Star */}
-                    <td className="w-11 py-3 pl-2 pr-0 text-right">
-                      <button
-                        onClick={() => toggleStar(person.id)}
-                        className="bg-transparent border-none cursor-pointer p-1 rounded-md hover:bg-gray-100 flex items-center justify-center ml-auto"
-                      >
-                        <img
-                          src="../assets/Star.png"
-                          alt="Favourite"
-                          className={`w-[18px] h-[18px] object-contain transition-opacity ${starred[person.id] ? "opacity-100" : "opacity-40"}`}
-                        />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      {/* Star */}
+                      <td className="w-11 py-3 pl-2 pr-0 text-right">
+                        <button
+                          onClick={() => toggleStar(person.id)}
+                          className="bg-transparent border-none cursor-pointer p-1 rounded-md hover:bg-gray-100 flex items-center justify-center ml-auto"
+                        >
+                          <img
+                            src="../assets/Star.png"
+                            alt="Favourite"
+                            className={`w-[18px] h-[18px] object-contain transition-opacity ${starred[person.id] ? "opacity-100" : "opacity-40"}`}
+                          />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
 
-                {filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="text-center py-10 text-gray-400 text-sm">
-                      Tidak ada hasil ditemukan.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  {filtered.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="text-center py-10 text-gray-400 text-sm">
+                        Tidak ada hasil ditemukan.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </main>
-      </div>
 
-      {/* Bottom Nav (mobile) */}
+        </main>
+
       <BottomNav />
     </div>
   );

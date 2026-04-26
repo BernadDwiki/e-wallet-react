@@ -1,17 +1,19 @@
+import { useSelector } from 'react-redux';
 import TransactionItem from './TransactionItem';
 
-const TRANSACTIONS = [
-  { id: 2, name: "Floyd Miles", type: "Send", amount: "-Rp50.000", positive: false, avatar: "./assets/prof/1-1.png" },
-  { id: 3, name: "Ujang", type: "Send", amount: "-Rp50.000", positive: false, avatar: "./assets/prof/1-2.png" },
-  { id: 4, name: "Raulemons", type: "Transfer", amount: "+Rp50.000", positive: true, avatar: "./assets/prof/1-3.png" },
-  { id: 5, name: "Reiva", type: "Transfer", amount: "+Rp50.000", positive: true, avatar: "./assets/prof/1-4.png" },
-  { id: 6, name: "Thobie", type: "Send", amount: "-Rp50.000", positive: false, avatar: "./assets/prof/1-5.png" },
-  { id: 7, name: "Buzjany", type: "Transfer", amount: "+Rp50.000", positive: true, avatar: "./assets/prof/1-6.png" },
-  { id: 8, name: "Adisurya", type: "Send", amount: "-Rp50.000", positive: false, avatar: "./assets/prof/1-7.png" },
-  { id: 9, name: "Miguelle", type: "Transfer", amount: "+Rp50.000", positive: true, avatar: "./assets/prof/1-8.png" },
-];
+const formatRp = (n) => `Rp ${n.toLocaleString('id-ID')}`;
 
 export default function TransactionHistory() {
+  const transfers = useSelector((state) => state.history.transfers);
+  const transactions = transfers.slice(0, 9).map((transfer) => ({
+    id: transfer.id,
+    name: transfer.recipient?.name || 'Unknown',
+    type: 'Send',
+    amount: `-${formatRp(transfer.amount)}`,
+    positive: false,
+    avatar: transfer.recipient?.avatar || './assets/prof/1.png',
+  }));
+
   return (
     <div className="overflow-hidden shadow-sm rounded-[24px] border border-gray-200">
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-white">
@@ -21,10 +23,22 @@ export default function TransactionHistory() {
         </a>
       </div>
 
-      <div className="divide-y divide-gray-200 bg-white">
-        {TRANSACTIONS.map((transaction) => (
-          <TransactionItem key={transaction.id} transaction={transaction} />
-        ))}
+      <div className="overflow-x-auto bg-white">
+        <table className="w-full border-collapse">
+          <tbody>
+            {transactions.length > 0 ? (
+              transactions.map((transaction) => (
+                <TransactionItem key={transaction.id} transaction={transaction} />
+              ))
+            ) : (
+              <tr>
+                <td colSpan="2" className="py-8 text-center text-gray-500">
+                  No transaction history yet
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
