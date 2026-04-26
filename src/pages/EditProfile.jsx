@@ -9,22 +9,23 @@ import BottomNav from "../components/BottomNav";
 const ASSETS = "/assets";
 
 // ─── INPUT FIELD ──────────────────────────────────────────────────────────────
-function InputField({ label, type, placeholder, icon, value, onChange }) {
+function InputField({ label, type, placeholder, icon, value, onChange, disabled = false }) {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-bold text-gray-900">{label}</label>
-      <div className="flex items-center gap-3 border border-gray-200 focus-within:border-[#2D39F5] rounded-xl px-4 py-3 bg-white transition-colors">
+      <div className={`flex items-center gap-3 border rounded-xl px-4 py-3 bg-white transition-colors ${disabled ? 'border-gray-100 bg-gray-50' : 'border-gray-200 focus-within:border-[#2D39F5]'}`}>
         <img
           src={`${ASSETS}/${icon}`}
           alt=""
-          className="w-4 h-4 object-contain opacity-50 shrink-0"
+          className={`w-4 h-4 object-contain shrink-0 ${disabled ? 'opacity-30' : 'opacity-50'}`}
         />
         <input
           type={type}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="border-none outline-none text-sm text-gray-900 flex-1 bg-transparent placeholder-gray-400"
+          disabled={disabled}
+          className={`border-none outline-none text-sm flex-1 bg-transparent placeholder-gray-400 ${disabled ? 'text-gray-500 cursor-not-allowed' : 'text-gray-900'}`}
         />
       </div>
     </div>
@@ -114,7 +115,7 @@ function ProfileCard() {
 
       <InputField label="Full Name" type="text" placeholder="Enter Full Name" icon="User.png" value={name} onChange={(e) => setName(e.target.value)} />
       <InputField label="Phone" type="tel" placeholder="Enter Your Number Phone" icon="Phone.png" value={phone} onChange={(e) => setPhone(e.target.value)} />
-      <InputField label="Email" type="email" placeholder="Enter Your Email" icon="mail.png" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <InputField label="Email" type="email" placeholder="Enter Your Email" icon="mail.png" value={email} onChange={(e) => setEmail(e.target.value)} disabled />
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-bold text-gray-900">Password</label>

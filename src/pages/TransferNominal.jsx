@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { setAmount, setNotes } from '../store/slice/transferSlice.js';
+import { addTransferHistory } from '../store/slice/historySlice.js';
 import { useAuth } from '../hooks/useAuth.js';
 import Topbar from '../components/Topbar';
 import Sidebar from '../components/Sidebar';
@@ -41,14 +44,30 @@ function Steps() {
 
 export default function TransferNominal() {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, transfer } = useAuth();
+  const dispatch = useDispatch();
+  const selectedPerson = useSelector((state) => state.transfer.selectedPerson);
+  const amount = useSelector((state) => state.transfer.amount);
+  const notes = useSelector((state) => state.transfer.notes);
   const [showPinModal, setShowPinModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFailedModal, setShowFailedModal] = useState(false);
 
-  const handlePinSubmit = (pin) => {
+  const handlePinSubmit = async (pin) => {
     if (pin === currentUser.pin) {
-      setShowSuccessModal(true);
+      try {
+        const transferAmount = parseInt(amount.replace(/\D/g, '')) || 0;
+        await transfer(transferAmount);
+        dispatch(addTransferHistory({
+          recipient: selectedPerson,
+          amount: transferAmount,
+          notes,
+          type: 'outgoing'
+        }));
+        setShowSuccessModal(true);
+      } catch {
+        setShowFailedModal(true);
+      }
     } else {
       setShowFailedModal(true);
     }
@@ -80,9 +99,9 @@ export default function TransferNominal() {
 
         {/* Content Card */}
         <div className="bg-white rounded-2xl border border-gray-200 p-7 flex flex-col gap-7">
-          <PersonInfo />
-          <AmountSection />
-          <NotesSection />
+          <PersonInfo name={selectedPerson?.name} phone={selectedPerson?.phone} avatar={selectedPerson?.avatar} />
+          <AmountSection value={amount} onChange={(e) => dispatch(setAmount(e.target.value))} />
+          <NotesSection value={notes} onChange={(e) => dispatch(setNotes(e.target.value))} />
 
           <button
             onClick={() => setShowPinModal(true)}

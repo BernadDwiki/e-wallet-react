@@ -1,3 +1,4 @@
+import { useAuth } from '../hooks/useAuth.js';
 import Card from './Card';
 
 const ASSETS = {
@@ -9,13 +10,15 @@ const ASSETS = {
   badgeExpense: "./assets/Badge-Tag(2).png",
 };
 
-const STAT_CARDS = [
-  { label: "Balance", value: "Rp.120.000", icon: ASSETS.balance, badge: ASSETS.badgeBalance },
-  { label: "Income", value: "Rp.2.120.000", icon: ASSETS.income, badge: ASSETS.badgeIncome },
-  { label: "Expense", value: "Rp.2.000.000", icon: ASSETS.expense, badge: ASSETS.badgeExpense },
-];
-
 export default function StatCards() {
+  const { currentUser } = useAuth();
+
+  const STAT_CARDS = [
+    { label: "Balance", value: `Rp.${(currentUser?.balance || 0).toLocaleString('id-ID')}`, icon: ASSETS.balance, badge: ASSETS.badgeBalance },
+    { label: "Income", value: `Rp.${(currentUser?.income || 0).toLocaleString('id-ID')}`, icon: ASSETS.income, badge: ASSETS.badgeIncome },
+    { label: "Expense", value: `Rp.${(currentUser?.expense || 0).toLocaleString('id-ID')}`, icon: ASSETS.expense, badge: ASSETS.badgeExpense },
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
       {STAT_CARDS.map((card) => (

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
 import Modal from "../components/Modal";
 import Topbar from "../components/Topbar";
@@ -9,57 +10,155 @@ const ASSETS = "/assets";
 
 export default function ChangePin() {
   const { currentUser, changePin } = useAuth();
-  const [pins, setPins] = useState(Array(6).fill(''));
+  const navigate = useNavigate();
+  const [oldPins, setOldPins] = useState(Array(6).fill(''));
+  const [newPins, setNewPins] = useState(Array(6).fill(''));
+  const [confirmPins, setConfirmPins] = useState(Array(6).fill(''));
   const [isSaving, setIsSaving] = useState(false);
+  const [step, setStep] = useState('old');
+  const [shouldNavigate, setShouldNavigate] = useState(false);
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
     message: "",
     type: "info"
   });
-  const inputRefs = useRef([]);
+  const inputRefs = useRef({ old: [], new: [], confirm: [] });
 
-  const handleChange = (index, value) => {
+  const handleChange = (group, index, value) => {
     if (!/^\d?$/.test(value)) return;
-    const next = [...pins];
+    const setter = group === 'old' ? setOldPins : group === 'new' ? setNewPins : setConfirmPins;
+    const current = group === 'old' ? oldPins : group === 'new' ? newPins : confirmPins;
+    const next = [...current];
     next[index] = value;
-    setPins(next);
+    setter(next);
     if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
+      inputRefs.current[group][index + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !pins[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
+  const handleKeyDown = (group, index, e) => {
+    const current = group === 'old' ? oldPins : group === 'new' ? newPins : confirmPins;
+    if (e.key === 'Backspace' && !current[index] && index > 0) {
+      inputRefs.current[group][index - 1]?.focus();
     }
   };
 
-  const handleSubmit = async () => {
-    const pin = pins.join('');
-    if (pin.length < 6) {
+  const handlePaste = (group, e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').slice(0, 6).split('');
+    const next = Array(6).fill('');
+    pasted.forEach((char, i) => {
+      if (/^\d$/.test(char)) next[i] = char;
+    });
+    if (group === 'old') setOldPins(next);
+    if (group === 'new') setNewPins(next);
+    if (group === 'confirm') setConfirmPins(next);
+    const nextEmpty = next.findIndex((p) => p === '');
+    inputRefs.current[group][nextEmpty === -1 ? 5 : nextEmpty]?.focus();
+  };
+
+  const verifyOldPin = () => {
+    const oldPin = oldPins.join('');
+
+    if (oldPin.length < 6) {
       setModal({
         isOpen: true,
-        title: "Incomplete PIN",
-        message: "Please fill all 6 PIN digits.",
+        title: "PIN Lama Belum Lengkap",
+        message: "Silakan isi 6 digit PIN lama.",
         type: "error"
       });
       return;
     }
-    setIsSaving(true);
-    try {
-      await changePin(pin);
+
+    if (oldPin !== currentUser.pin) {
       setModal({
         isOpen: true,
-        title: "PIN Updated",
+        title: "PIN Lama Salah",
+        message: "PIN lama tidak sesuai. Coba lagi.",
+        type: "error"
+      });
+      return;
+    }
+
+    setModal({
+      isOpen: true,
+      title: "PIN Lama Benar",
+      message: "PIN lama valid. Silakan masukkan PIN baru.",
+      type: "success"
+    });
+  };
+
+  const verifyNewPin = () => {
+    const newPin = newPins.join('');
+
+    if (newPin.length < 6) {
+      setModal({
+        isOpen: true,
+        title: "PIN Baru Belum Lengkap",
+        message: "Silakan isi 6 digit PIN baru.",
+        type: "error"
+      });
+      return;
+    }
+
+    const oldPin = oldPins.join('');
+    if (newPin === oldPin) {
+      setModal({
+        isOpen: true,
+        title: "PIN Baru Tidak Boleh Sama",
+        message: "PIN baru harus berbeda dari PIN lama.",
+        type: "error"
+      });
+      return;
+    }
+
+    setModal({
+      isOpen: true,
+      title: "PIN Baru Benar",
+      message: "PIN baru diterima. Silakan konfirmasi PIN.",
+      type: "success"
+    });
+  };
+
+  const confirmPinAndSave = async () => {
+    const newPin = newPins.join('');
+    const confirmPin = confirmPins.join('');
+
+    if (confirmPin.length < 6) {
+      setModal({
+        isOpen: true,
+        title: "Konfirmasi PIN Belum Lengkap",
+        message: "Silakan isi 6 digit konfirmasi PIN.",
+        type: "error"
+      });
+      return;
+    }
+
+    if (newPin !== confirmPin) {
+      setModal({
+        isOpen: true,
+        title: "PIN Tidak Cocok",
+        message: "PIN konfirmasi tidak sama dengan PIN baru.",
+        type: "error"
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await changePin(newPin);
+      setModal({
+        isOpen: true,
+        title: "Berhasil",
         message: "PIN berhasil diperbarui.",
         type: "success"
       });
-      setPins(Array(6).fill(''));
+      setShouldNavigate(true);
     } catch (error) {
       setModal({
         isOpen: true,
-        title: "Update Failed",
+        title: "Gagal Menyimpan",
         message: error.message || 'Gagal memperbarui PIN.',
         type: "error"
       });
@@ -69,6 +168,21 @@ export default function ChangePin() {
   };
 
   const closeModal = () => {
+    if (modal.type === 'success') {
+      if (step === 'old') {
+        setStep('new');
+      } else if (step === 'new') {
+        setStep('confirm');
+      }
+    }
+    if (shouldNavigate) {
+      navigate('/edit-profile');
+      setShouldNavigate(false);
+      setOldPins(Array(6).fill(''));
+      setNewPins(Array(6).fill(''));
+      setConfirmPins(Array(6).fill(''));
+      setStep('old');
+    }
     setModal(prev => ({ ...prev, isOpen: false }));
   };
 
@@ -107,32 +221,95 @@ export default function ChangePin() {
             Please save your pin because this so important.
           </p>
 
-          {/* PIN Inputs */}
-          <div className="flex flex-wrap justify-center gap-4 mt-2">
-            {pins.map((val, i) => (
-              <input
-                key={i}
-                ref={(el) => (inputRefs.current[i] = el)}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={val}
-                placeholder="0"
-                disabled={isSaving}
-                onChange={(e) => handleChange(i, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(i, e)}
-                className={`w-12 sm:w-14 h-12 sm:h-14 text-center text-xl sm:text-xl font-bold bg-transparent border-b-2 rounded-none outline-none transition-colors duration-200 ${val ? 'border-[#2D39F5]' : 'border-gray-300'} focus:border-[#2D39F5] placeholder:text-gray-300`}
-              />
-            ))}
+          <div className="w-full grid gap-6 mt-2">
+            {step === 'old' && (
+              <div className="flex flex-col gap-3 w-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-gray-900">Old PIN</span>
+                  <span className="text-xs text-gray-500">Langkah 1 dari 3</span>
+                </div>
+                <div className="flex flex-wrap justify-center gap-3" onPaste={(e) => handlePaste('old', e)}>
+                  {oldPins.map((val, i) => (
+                    <input
+                      key={`old-${i}`}
+                      ref={(el) => (inputRefs.current.old[i] = el)}
+                      type="password"
+                      inputMode="numeric"
+                      autoFocus={step === 'old' && i === 0}
+                      maxLength={1}
+                      value={val}
+                      placeholder="•"
+                      disabled={isSaving || step !== 'old'}
+                      onChange={(e) => handleChange('old', i, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown('old', i, e)}
+                      className={`w-12 sm:w-14 h-12 sm:h-14 text-center text-xl sm:text-xl font-bold bg-transparent border-b-2 rounded-none outline-none transition-colors duration-200 ${val ? 'border-[#2D39F5]' : 'border-gray-300'} focus:border-[#2D39F5] placeholder:text-gray-300 ${step !== 'old' ? 'opacity-60' : ''}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {step === 'new' && (
+              <div className="flex flex-col gap-3 w-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-gray-900">New PIN</span>
+                  <span className="text-xs text-gray-500">Langkah 2 dari 3</span>
+                </div>
+                <div className="flex flex-wrap justify-center gap-3" onPaste={(e) => handlePaste('new', e)}>
+                  {newPins.map((val, i) => (
+                    <input
+                      key={`new-${i}`}
+                      ref={(el) => (inputRefs.current.new[i] = el)}
+                      type="password"
+                      inputMode="numeric"
+                      autoFocus={step === 'new' && i === 0}
+                      maxLength={1}
+                      value={val}
+                      placeholder="•"
+                      disabled={isSaving || step !== 'new'}
+                      onChange={(e) => handleChange('new', i, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown('new', i, e)}
+                      className={`w-12 sm:w-14 h-12 sm:h-14 text-center text-xl sm:text-xl font-bold bg-transparent border-b-2 rounded-none outline-none transition-colors duration-200 ${val ? 'border-[#2D39F5]' : 'border-gray-300'} focus:border-[#2D39F5] placeholder:text-gray-300 ${step !== 'new' ? 'opacity-60' : ''}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {step === 'confirm' && (
+              <div className="flex flex-col gap-3 w-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-gray-900">Confirm PIN</span>
+                  <span className="text-xs text-gray-500">Langkah 3 dari 3</span>
+                </div>
+                <div className="flex flex-wrap justify-center gap-3" onPaste={(e) => handlePaste('confirm', e)}>
+                  {confirmPins.map((val, i) => (
+                    <input
+                      key={`confirm-${i}`}
+                      ref={(el) => (inputRefs.current.confirm[i] = el)}
+                      type="password"
+                      inputMode="numeric"
+                      autoFocus={i === 0}
+                      maxLength={1}
+                      value={val}
+                      placeholder="•"
+                      disabled={isSaving}
+                      onChange={(e) => handleChange('confirm', i, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown('confirm', i, e)}
+                      className={`w-12 sm:w-14 h-12 sm:h-14 text-center text-xl sm:text-xl font-bold bg-transparent border-b-2 rounded-none outline-none transition-colors duration-200 ${val ? 'border-[#2D39F5]' : 'border-gray-300'} focus:border-[#2D39F5] placeholder:text-gray-300`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Submit */}
           <button
-            onClick={handleSubmit}
+            onClick={step === 'old' ? verifyOldPin : step === 'new' ? verifyNewPin : confirmPinAndSave}
             disabled={isSaving}
             className="w-full mt-8 py-3.5 bg-[#2D39F5] text-white rounded-[10px] text-[15px] font-bold cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 border-0"
           >
-            {isSaving ? 'Saving...' : 'Submit'}
+            {isSaving ? 'Saving...' : step === 'old' ? 'Verify Old PIN' : step === 'new' ? 'Verify New PIN' : 'Confirm & Save PIN'}
           </button>
 
           <Modal isOpen={modal.isOpen} onClose={closeModal} title={modal.title}>

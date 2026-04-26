@@ -21,6 +21,9 @@ export const AuthProvider = ({ children }) => {
     const newUser = {
       id: Date.now().toString(),
       ...userData,
+      balance: 0,
+      income: 0,
+      expense: 0,
       createdAt: new Date().toISOString()
     };
     setUsers([...users, newUser]);

@@ -11,15 +11,19 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/es/storage';
 import authReducer from './slice/authSlice.js';
+import transferReducer from './slice/transferSlice.js';
+import historyReducer from './slice/historySlice.js';
 
 const persistConfig = {
   key: 'e-wallet-root',
   storage,
-  whitelist: ['auth']
+  whitelist: ['auth', 'transfer', 'history']
 };
 
 const persistedReducer = persistCombineReducers(persistConfig, {
-  auth: authReducer
+  auth: authReducer,
+  transfer: transferReducer,
+  history: historyReducer
 });
 
 export const store = configureStore({

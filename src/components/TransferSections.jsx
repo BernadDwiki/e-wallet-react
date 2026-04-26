@@ -2,13 +2,13 @@ import useLocalStorage from '../hooks/useLocalStorage.js';
 
 const BASE = '../assets';
 
-export function PersonInfo({ name = 'Ghaluh 1', phone = '(239) 555–0108' }) {
+export function PersonInfo({ name = 'Ghaluh 1', phone = '(239) 555–0108', avatar }) {
   return (
     <div>
       <div className="text-base font-bold text-gray-900 mb-3.5">People Information</div>
       <div className="flex items-center gap-4 bg-gray-100 rounded-xl px-5 py-4 relative">
         <img
-          src={`${BASE}/prof3/Rectangle 648.png`}
+          src={avatar || `${BASE}/prof3/Rectangle 648.png`}
           alt={name}
           className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
         />
@@ -29,9 +29,7 @@ export function PersonInfo({ name = 'Ghaluh 1', phone = '(239) 555–0108' }) {
   );
 }
 
-export function AmountSection() {
-  const [value, setValue] = useLocalStorage('transfer_amount', '');
-
+export function AmountSection({ value, onChange }) {
   return (
     <div>
       <div className="text-base font-bold text-gray-900 mb-3.5">Amount</div>
@@ -47,7 +45,7 @@ export function AmountSection() {
         <input
           type="text"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={onChange}
           placeholder="Enter Nominal Transfer"
           className="border-none outline-none font-[inherit] text-sm text-gray-900 flex-1 bg-transparent placeholder-gray-400"
         />
@@ -56,9 +54,7 @@ export function AmountSection() {
   );
 }
 
-export function NotesSection() {
-  const [notes, setNotes] = useLocalStorage('transfer_notes', '');
-
+export function NotesSection({ value, onChange }) {
   return (
     <div>
       <div className="text-base font-bold text-gray-900 mb-3.5">Notes</div>
@@ -66,8 +62,8 @@ export function NotesSection() {
         You can add some notes for this transfer such as payment coffee or something.
       </p>
       <textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
+        value={value}
+        onChange={onChange}
         placeholder="Enter Some Notes"
         className="w-full border border-gray-200 rounded-xl px-4 py-3.5 font-[inherit] text-sm text-gray-900 resize-y outline-none min-h-[130px] placeholder-gray-400 focus:border-[#2D39F5] transition-colors"
       />

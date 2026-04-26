@@ -1,5 +1,7 @@
 import { useLayoutEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { setSelectedPerson } from '../store/slice/transferSlice.js';
 import { useAuth } from "../hooks/useAuth.js";
 import useLocalStorage from "../hooks/useLocalStorage.js";
 import Topbar from "../components/Topbar";
@@ -21,6 +23,7 @@ export default function TransferPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser } = useAuth();
+  const dispatch = useDispatch();
   const [search, setSearch] = useLocalStorage("transfer_search", searchParams.get('search') || "");
   const [starred, setStarred] = useLocalStorage("transfer_starred", {});
 
@@ -39,6 +42,11 @@ export default function TransferPage() {
 
   const toggleStar = (id) =>
     setStarred((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const handleSelectPerson = (person) => {
+    dispatch(setSelectedPerson(person));
+    navigate('/transfer-nominal');
+  };
 
   const handleSearchChange = (value) => {
     setSearch(value);
@@ -76,9 +84,9 @@ export default function TransferPage() {
               <span className="text-[11px] md:text-[13px] font-semibold text-gray-900">Find People</span>
             </div>
             <div className="w-10 md:w-20 mx-1 md:mx-2.5 border-t-2 border-dashed border-gray-300 flex-shrink-0" />
-            <div className="flex items-center gap-1 md:gap-2 cursor-pointer" onClick={() => navigate('/transfer-nominal')}>
-              <div className="w-6 h-6 rounded-full bg-gray-300 hover:bg-[#2D39F5] text-gray-500 hover:text-white text-xs font-bold flex items-center justify-center flex-shrink-0 transition-colors">2</div>
-              <span className="text-[11px] md:text-[13px] font-semibold text-gray-400 hover:text-gray-900 transition-colors">Set Nominal</span>
+            <div className="flex items-center gap-1 md:gap-2">
+              <div className="w-6 h-6 rounded-full bg-gray-300 text-gray-500 text-xs font-bold flex items-center justify-center flex-shrink-0">2</div>
+              <span className="text-[11px] md:text-[13px] font-semibold text-gray-400">Set Nominal</span>
             </div>
             <div className="w-10 md:w-20 mx-1 md:mx-2.5 border-t-2 border-dashed border-gray-300 flex-shrink-0" />
             <div className="flex items-center gap-1 md:gap-2">
@@ -117,11 +125,17 @@ export default function TransferPage() {
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <tbody>
-                  {filtered.map((person) => (
+                  {filtered.map((person, index) => (
                     <tr
                       key={person.id}
-                      className={`border-b border-gray-200 last:border-b-0 cursor-pointer transition-colors hover:bg-gray-100
-                        ${person.highlighted ? "bg-[#EEF0FF]" : "bg-white"}`}
+                      onClick={() => handleSelectPerson(person)}
+                      className={`border-b border-gray-200 last:border-b-0 cursor-pointer transition-colors hover:bg-gray-100 ${
+                        person.highlighted
+                          ? "bg-[#EEF0FF]"
+                          : index % 2 === 0
+                          ? "bg-white"
+                          : "bg-gray-50"
+                      }`}
                     >
                       {/* Avatar */}
                       <td className="w-[60px] py-3 pr-2 pl-0">

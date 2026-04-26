@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useAuth } from "../hooks/useAuth.js";
 import useLocalStorage from "../hooks/useLocalStorage.js";
+import Modal from "../components/Modal";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
@@ -16,14 +18,58 @@ const paymentMethods = [
 
 /* ── MAIN CONTENT ── */
 function TopUpContent() {
+  const { topup } = useAuth();
   const [selected, setSelected] = useLocalStorage("topup_payment_method", "bri");
   const [amount, setAmount] = useLocalStorage("topup_amount", "");
+  const [isSaving, setIsSaving] = useState(false);
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info"
+  });
   const TAX = 4000;
-  const order = parseInt(amount.replace(/\D/g, "")) || 40000;
+  const order = parseInt(amount.replace(/\D/g, "")) || 0;
   const subtotal = order + TAX;
 
   const fmt = (n) =>
     "Idr. " + n.toLocaleString("id-ID");
+
+  const handleSubmit = async () => {
+    if (order <= 0) {
+      setModal({
+        isOpen: true,
+        title: "Invalid Amount",
+        message: "Masukkan nominal top-up yang valid.",
+        type: "error"
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await topup(order);
+      setModal({
+        isOpen: true,
+        title: "Topup Successful",
+        message: `Topup sebesar ${fmt(order)} berhasil.`,
+        type: "success"
+      });
+    } catch (error) {
+      setModal({
+        isOpen: true,
+        title: "Topup Failed",
+        message: error.message || "Gagal melakukan topup.",
+        type: "error"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }));
+  };
 
   return (
     <main className="p-7 flex flex-col gap-5 bg-[#F5F6FA] overflow-auto">
@@ -168,8 +214,12 @@ function TopUpContent() {
             </span>
           </div>
 
-          <button className="w-full py-3.5 bg-[#2D39F5] text-white text-sm font-bold rounded-xl cursor-pointer hover:opacity-90 transition-opacity border-none mb-3">
-            Submit
+          <button
+            onClick={handleSubmit}
+            disabled={isSaving || order <= 0}
+            className="w-full py-3.5 bg-[#2D39F5] text-white text-sm font-bold rounded-xl cursor-pointer hover:opacity-90 transition-opacity border-none mb-3 disabled:opacity-50"
+          >
+            {isSaving ? "Processing..." : "Submit"}
           </button>
 
           <p className="text-[11px] text-gray-400 leading-relaxed">
@@ -177,6 +227,24 @@ function TopUpContent() {
           </p>
         </div>
       </div>
+
+      <Modal isOpen={modal.isOpen} onClose={closeModal} title={modal.title}>
+        <div className={`p-4 rounded-lg ${
+          modal.type === 'success' ? 'bg-green-50 text-green-800' :
+          modal.type === 'error' ? 'bg-red-50 text-red-800' :
+          'bg-blue-50 text-blue-800'
+        }`}>
+          <p className="text-center">{modal.message}</p>
+        </div>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={closeModal}
+            className="px-4 py-2 bg-[#2D39F5] text-white rounded-lg hover:bg-[#233cbd] transition-colors"
+          >
+            OK
+          </button>
+        </div>
+      </Modal>
     </main>
   );
 }

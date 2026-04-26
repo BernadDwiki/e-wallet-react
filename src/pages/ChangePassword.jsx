@@ -30,7 +30,7 @@ function PasswordField({ label, placeholder, value, onChange, error }) {
           className="flex-1 border-none outline-none text-sm text-gray-900 bg-transparent placeholder-gray-400"
         />
         <img
-          src={show ? `${ASSETS}/Eye.png` : `${ASSETS}/EyeSlash.png`}
+          src={`${ASSETS}/EyeSlash.png`}
           alt="Toggle visibility"
           className="w-4 h-4 object-contain opacity-40 cursor-pointer shrink-0 hover:opacity-70 transition-opacity"
           onClick={() => setShow(!show)}
