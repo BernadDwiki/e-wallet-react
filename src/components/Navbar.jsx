@@ -1,7 +1,11 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const user = useSelector((state) => state.auth.currentUser);
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const pictureSrc = user?.picture ? `${API_BASE}${user.picture}` : '/default-avatar.png';
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -21,18 +25,30 @@ const Navbar = () => {
 
       {/* Desktop Navigation */}
       <nav className="hidden md:flex items-center gap-4">
-        <a
-          href="/auth/login"
-          className="text-white no-underline rounded-lg border border-white px-[15px] py-[10px] hover:bg-white hover:text-[#2948ff] transition-colors duration-300"
-        >
-          SignIn
-        </a>
-        <a
-          href="/auth/register"
-          className="bg-white text-[#2948ff] no-underline rounded-lg border border-white px-[15px] py-[10px] hover:opacity-90 transition-opacity duration-300 font-semibold"
-        >
-          Sign Up
-        </a>
+        {!user ? (
+          <>
+            <a
+              href="/auth/login"
+              className="text-white no-underline rounded-lg border border-white px-[15px] py-[10px] hover:bg-white hover:text-[#2948ff] transition-colors duration-300"
+            >
+              SignIn
+            </a>
+            <a
+              href="/auth/register"
+              className="bg-white text-[#2948ff] no-underline rounded-lg border border-white px-[15px] py-[10px] hover:opacity-90 transition-opacity duration-300 font-semibold"
+            >
+              Sign Up
+            </a>
+          </>
+        ) : (
+          <div className="flex items-center gap-4">
+            <img src={pictureSrc} alt={user.name || 'Profile'} className="w-10 h-10 rounded-full object-cover" />
+            <div className="text-left">
+              <h4 className="font-semibold">{user?.name}</h4>
+              <p className="text-sm">{user?.email}</p>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hamburger Menu Button - Mobile Only */}

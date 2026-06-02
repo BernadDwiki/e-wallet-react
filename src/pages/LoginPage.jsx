@@ -1,18 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { validateLoginForm } from "../utils/validation.js";
-import { useAuth } from "../hooks/useAuth.js";
+import { login as loginAction } from "../store/slice/authSlice.js";
+import { loginUser, getProfile } from "../services/authService.js";
 import Modal from "../components/Modal";
-
+ 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
@@ -46,34 +50,89 @@ export default function LoginPage() {
 
     if (!validateForm()) return;
 
-    try {
-      // Fake authentication using localStorage
-      const user = await login(formData.email, formData.password);
+    setLoading(true);
+    setApiError("");
 
-      setModal({
-        isOpen: true,
-        title: "Login Successful!",
-        message: `Welcome back, ${user.name || user.email.split('@')[0]}!`,
-        type: "success"
-      });
+    const result = await loginUser(formData);
+    setLoading(false);
 
-      // Check if user has PIN, if not redirect to enter PIN
-      setTimeout(() => {
-        if (!user.pin) {
-          navigate("/auth/enter-pin");
-        } else {
-          navigate("/dashboard");
-        }
-      }, 2000);
-
-    } catch (err) {
+    if (!result.success) {
+      setApiError(result.message);
       setModal({
         isOpen: true,
         title: "Login Failed",
-        message: err.message,
+        message: result.message,
         type: "error"
       });
+      return;
     }
+
+
+    const response = result.data;
+
+    const token =
+      response.data.token;
+
+    const hasPin =
+      response.data.has_pin === true;
+
+    // simpan token dulu
+    localStorage.setItem(
+      "token",
+      token
+    );
+
+    localStorage.setItem(
+      "has_pin",
+      String(hasPin)
+    );
+
+    localStorage.setItem(
+      "isAuthenticated",
+      "true"
+    );
+
+    // ambil profile user
+    const profileResult =
+      await getProfile();
+
+    if (profileResult.success) {
+      const user =
+        profileResult.data.data;
+
+      const sessionUser = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone_number:
+          user.phone_number,
+        // also include `phone` for existing components that expect `currentUser.phone`
+        phone: user.phone_number,
+        picture: user.picture,
+      };
+
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify(sessionUser)
+      );
+
+      dispatch(
+        loginAction(sessionUser)
+      );
+    }
+
+    setModal({
+      isOpen: true,
+      title: "Login Successful!",
+      message: "Login success",
+      type: "success",
+    });
+
+    setTimeout(() => {
+      navigate(
+        hasPin ? "/dashboard" : "/enter-pin"
+      );
+    }, 1000);
   };
 
   const closeModal = () => {
@@ -196,12 +255,16 @@ export default function LoginPage() {
               </button>
             </div>
 
+            {apiError && (
+              <p className="text-red-500 text-sm mb-3">{apiError}</p>
+            )}
             {/* Submit Button */}
             <button
               type="submit"
-              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5"
+              disabled={loading}
+              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login
+              {loading ? "Loading..." : "Login"}
             </button>
           </form>
 

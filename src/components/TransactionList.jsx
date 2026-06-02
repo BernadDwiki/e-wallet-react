@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { getTransactionHistory } from "../services/reportService";
 
 const formatRp = (n) => `Rp ${n.toLocaleString("id-ID")}`;
 
@@ -35,58 +34,79 @@ const TransactionRow = ({ tx, isEven }) => (
   </tr>
 );
 
-export default function TransactionList({ initialSearch = '' }) {
-  const transfers = useSelector((state) => state.history.transfers);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get('search') || initialSearch);
-  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
-  const itemsPerPage = 7;
+export default function TransactionList({ initialSearch = "" }) {
+  const [transactions, setTransactions] = useState([]);
+  const [searchInput, setSearchInput] = useState(initialSearch);
+  const [search, setSearch] = useState(initialSearch);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 7,
+    total_pages: 1,
+    total: 0,
+    nextPage: null,
+    prevPage: null,
+  });
+
+  const loadTransactions = async () => {
+    const result = await getTransactionHistory({
+      page: currentPage,
+      limit: 7,
+      search,
+    });
+
+    if (!result.success) return;
+
+    const payload = result.data?.data;
+    const items = Array.isArray(payload?.items) ? payload.items : [];
+    const page = payload?.page || 1;
+    const limit = payload?.limit || 7;
+    const total = payload?.total || 0;
+
+    console.log("TransactionList payload:", payload);
+    console.log("TransactionList items:", items);
+
+    const transferOnly = items.filter((item) => item.type === "transfer");
+    setTransactions(transferOnly);
+    setPagination({
+      page,
+      limit,
+      total,
+      total_pages: Math.max(1, Math.ceil(total / limit)),
+      nextPage: payload?.next_page ?? null,
+      prevPage: payload?.prev_page ?? null,
+    });
+  };
+
+  useEffect(() => {
+    loadTransactions();
+  }, [currentPage, search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setCurrentPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const handleSearchChange = (value) => {
-    setSearch(value);
-    setCurrentPage(1);
-    const newParams = new URLSearchParams(searchParams);
-    if (value.trim()) {
-      newParams.set('search', value);
-      newParams.set('page', '1');
-    } else {
-      newParams.delete('search');
-      newParams.delete('page');
-    }
-    setSearchParams(newParams);
+    setSearchInput(value);
   };
 
-  const transactions = transfers.map((transfer) => ({
-    id: transfer.id,
-    name: transfer.recipient?.name || 'Unknown',
-    phone: transfer.recipient?.phone || '',
-    amount: transfer.amount,
-    type: 'negative',
-    avatar: transfer.recipient?.avatar || '../assets/prof2/Rectangle 648.png',
+  const transactionRows = (Array.isArray(transactions) ? transactions : []).map((item) => ({
+    id: item.id,
+    avatar: "../assets/prof2/Rectangle 648.png",
+    name: item.name,
+    phone: item.phone_number,
+    amount: item.amount,
+    transactionType: item.type,
+    direction: item.direction,
+    type: item.direction === "expense" ? "negative" : "positive",
+    date: item.created_at,
+    status: item.status,
   }));
-
-  const filtered = transactions.filter(
-    (t) =>
-      t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.phone.includes(search)
-  );
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = filtered.slice(startIndex, endIndex);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= 9) {
-      setCurrentPage(page);
-      const newParams = new URLSearchParams(searchParams);
-      if (page === 1) {
-        newParams.delete('page');
-      } else {
-        newParams.set('page', page.toString());
-      }
-      setSearchParams(newParams);
-    }
-  };
 
   return (
     <div className="bg-white rounded-[14px] border border-gray-200 overflow-hidden">
@@ -95,9 +115,9 @@ export default function TransactionList({ initialSearch = '' }) {
         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3.5 py-2 bg-white w-[260px] focus-within:border-[#2D39F5] transition-colors">
           <input
             type="text"
-            value={search}
+            placeholder="Search name or phone number"
+            value={searchInput}
             onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Enter Number Or Full Name"
             className="flex-1 border-none outline-none text-[13px] text-gray-800 placeholder-gray-400 bg-transparent"
           />
           <img
@@ -108,13 +128,13 @@ export default function TransactionList({ initialSearch = '' }) {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="py-12 text-center text-gray-400 text-sm">Tidak ada transaksi ditemukan</div>
+      {transactionRows.length === 0 ? (
+        <div className="text-center py-10 text-gray-500">No transactions found</div>
       ) : (
         <div className="overflow-x-auto px-6">
           <table className="w-full border-collapse">
             <tbody>
-              {paginatedData.map((tx, i) => (
+              {transactionRows.map((tx, i) => (
                 <TransactionRow key={tx.id} tx={tx} isEven={i % 2 === 1} />
               ))}
             </tbody>
@@ -124,34 +144,34 @@ export default function TransactionList({ initialSearch = '' }) {
 
       <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
         <span className="text-xs text-gray-400">
-          Show {filtered.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, filtered.length)} of {filtered.length} History
+          Show {transactionRows.length === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1}-{Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} History
         </span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           <button
-            onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
+            onClick={() => setCurrentPage((prev) => prev - 1)}
             className="min-w-[30px] h-[30px] rounded-md border-none bg-transparent text-[13px] font-medium text-gray-500 cursor-pointer hover:text-[#2D39F5] px-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Prev
+            Previous
           </button>
 
-          {Array.from({ length: 9 }, (_, i) => i + 1).map((n) => (
+          {Array.from({ length: pagination.total_pages || 1 }, (_, i) => i + 1).map((page) => (
             <button
-              key={n}
-              onClick={() => handlePageChange(n)}
+              key={page}
+              onClick={() => setCurrentPage(page)}
               className={`min-w-[30px] h-[30px] rounded-md border-none text-[13px] font-medium px-2 transition-colors ${
-                n === currentPage
+                page === currentPage
                   ? "bg-[#2D39F5] text-white cursor-default"
                   : "bg-transparent text-gray-500 cursor-pointer hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
-              {n}
+              {page}
             </button>
           ))}
 
           <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === 9}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
+            disabled={currentPage >= pagination.total_pages}
             className="min-w-[30px] h-[30px] rounded-md border-none bg-transparent text-[13px] font-medium text-gray-500 cursor-pointer hover:text-[#2D39F5] px-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next

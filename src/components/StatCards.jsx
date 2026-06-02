@@ -1,4 +1,3 @@
-import { useAuth } from '../hooks/useAuth.js';
 import Card from './Card';
 
 const ASSETS = {
@@ -10,13 +9,33 @@ const ASSETS = {
   badgeExpense: "./assets/Badge-Tag(2).png",
 };
 
-export default function StatCards() {
-  const { currentUser } = useAuth();
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+  }).format(amount);
+};
 
+export default function StatCards({ walletData, loading }) {
   const STAT_CARDS = [
-    { label: "Balance", value: `Rp.${(currentUser?.balance || 0).toLocaleString('id-ID')}`, icon: ASSETS.balance, badge: ASSETS.badgeBalance },
-    { label: "Income", value: `Rp.${(currentUser?.income || 0).toLocaleString('id-ID')}`, icon: ASSETS.income, badge: ASSETS.badgeIncome },
-    { label: "Expense", value: `Rp.${(currentUser?.expense || 0).toLocaleString('id-ID')}`, icon: ASSETS.expense, badge: ASSETS.badgeExpense },
+    {
+      label: "Balance",
+      value: loading ? "Loading..." : formatCurrency(walletData?.balance || 0),
+      icon: ASSETS.balance,
+      badge: ASSETS.badgeBalance,
+    },
+    {
+      label: "Income",
+      value: loading ? "Loading..." : formatCurrency(walletData?.income || 0),
+      icon: ASSETS.income,
+      badge: ASSETS.badgeIncome,
+    },
+    {
+      label: "Expense",
+      value: loading ? "Loading..." : formatCurrency(walletData?.expense || 0),
+      icon: ASSETS.expense,
+      badge: ASSETS.badgeExpense,
+    },
   ];
 
   return (

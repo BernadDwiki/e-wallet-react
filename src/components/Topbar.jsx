@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../services/authService";
 import { useAuth } from "../hooks/useAuth.js";
 import LogoutConfirmModal from "./LogoutConfirmModal";
 
@@ -22,16 +23,29 @@ export default function Topbar({ currentUser }) {
   const { logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const avatarSrc = currentUser?.picture ? `${API_BASE}${currentUser.picture}` : ASSETS.avatar;
 
   const handleLogoutClick = () => {
     setMenuOpen(false);
     setShowLogoutModal(true);
   };
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     setShowLogoutModal(false);
-    logout();
-    navigate("/auth/login");
+
+    try {
+      const result = await logoutUser();
+      if (result.success) {
+        logout();
+        localStorage.removeItem("persist:root");
+        navigate("/auth/login");
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -49,12 +63,17 @@ export default function Topbar({ currentUser }) {
             className="flex items-center gap-2.5 rounded-full transition-colors hover:bg-gray-100 px-2 py-1"
           >
             <span className="text-sm font-semibold text-gray-800 hidden sm:block">{currentUser?.name || 'User'}</span>
-            <img src={ASSETS.avatar} alt="User Avatar" className="w-10 h-10 rounded-full object-cover border-2 border-gray-200" />
+            <img src={avatarSrc} alt="User Avatar" className="w-10 h-10 rounded-full object-cover border-2 border-gray-200" />
             <img src={ASSETS.chevron} alt="Expand" className={`w-4 h-4 object-contain opacity-45 transition-transform ${menuOpen ? "rotate-180" : "rotate-0"}`} />
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+            <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100">
+                <div className="text-sm font-semibold text-gray-800">{currentUser?.name || 'User'}</div>
+                <div className="text-xs text-gray-500 truncate">{currentUser?.email}</div>
+                <div className="text-xs text-gray-500 mt-1">{currentUser?.phone_number || 'Phone number not set'}</div>
+              </div>
               <a
                 href="#"
                 className="group flex items-center gap-3 px-4 py-3 text-sm text-gray-900 hover:bg-blue-600 hover:text-white transition-colors"

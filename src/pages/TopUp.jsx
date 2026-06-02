@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
+import { createTopUp } from "../services/topUpService.js";
 import useLocalStorage from "../hooks/useLocalStorage.js";
 import Modal from "../components/Modal";
 import Topbar from "../components/Topbar";
@@ -18,9 +20,11 @@ const paymentMethods = [
 
 /* ── MAIN CONTENT ── */
 function TopUpContent() {
-  const { topup } = useAuth();
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [selected, setSelected] = useLocalStorage("topup_payment_method", "bri");
   const [amount, setAmount] = useLocalStorage("topup_amount", "");
+  const [note, setNote] = useLocalStorage("topup_note", "");
   const [isSaving, setIsSaving] = useState(false);
   const [modal, setModal] = useState({
     isOpen: false,
@@ -28,9 +32,25 @@ function TopUpContent() {
     message: "",
     type: "info"
   });
-  const TAX = 4000;
+  const paymentMethodIds = {
+    bri: 1,
+    dana: 2,
+    bca: 3,
+    gopay: 4,
+    ovo: 5,
+  };
+  const feeEstimates = {
+    bri: { adminFee: 1500,  taxPercent: 0.05 }, // Bank Rakyat Indonesia
+    dana: { adminFee: 1000, taxPercent: 0.03 }, // Dana
+    bca: { adminFee: 1200, taxPercent: 0.04 }, // Bank Central Asia
+    gopay: { adminFee: 800,  taxPercent: 0.02 }, // GoPay
+    ovo: { adminFee: 900, taxPercent: 0.03 }, // OVO
+    default: { adminFee: 1500, taxPercent: 0.05 },
+  };
+  const { adminFee, taxPercent } = feeEstimates[selected] || feeEstimates.default;
   const order = parseInt(amount.replace(/\D/g, "")) || 0;
-  const subtotal = order + TAX;
+  const taxAmount = Math.round(order * taxPercent);
+  const totalPayment = order + adminFee + taxAmount;
 
   const fmt = (n) =>
     "Idr. " + n.toLocaleString("id-ID");
@@ -46,25 +66,37 @@ function TopUpContent() {
       return;
     }
 
-    setIsSaving(true);
-    try {
-      await topup(order);
+    if (!note.trim()) {
       setModal({
         isOpen: true,
-        title: "Topup Successful",
-        message: `Topup sebesar ${fmt(order)} berhasil.`,
-        type: "success"
-      });
-    } catch (error) {
-      setModal({
-        isOpen: true,
-        title: "Topup Failed",
-        message: error.message || "Gagal melakukan topup.",
+        title: "Note Required",
+        message: "Masukkan catatan top-up terlebih dahulu.",
         type: "error"
       });
-    } finally {
-      setIsSaving(false);
+      return;
     }
+
+    setIsSaving(true);
+
+    const result = await createTopUp({
+      amount: order,
+      note,
+      payment_method_id: paymentMethodIds[selected],
+    });
+
+    setIsSaving(false);
+
+    if (result.success) {
+      navigate('/topup-success', { state: result.data.data });
+      return;
+    }
+
+    setModal({
+      isOpen: true,
+      title: "Topup Failed",
+      message: result.message || "Gagal melakukan topup.",
+      type: "error"
+    });
   };
 
   const closeModal = () => {
@@ -97,15 +129,15 @@ function TopUpContent() {
             <div className="flex items-center gap-3.5 bg-gray-100 rounded-xl px-4 py-3.5">
               <img
                 src={`${ASSETS}/ghaluh.png`}
-                alt="Ghaluh Wizard"
-                className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
+                alt={currentUser?.name || "User"}
+                className="w-14 h-14 rounded-xl object-cover shrink-0"
               />
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-bold text-gray-900">
-                  Ghaluh Wizard
+                  {currentUser?.name || "Guest User"}
                 </span>
                 <span className="text-[13px] text-gray-500">
-                  (239) 555–0108
+                  {currentUser?.phone || currentUser?.phone_number || "-"}
                 </span>
                 <img
                   src={`${ASSETS}/Sidenav item.png`}
@@ -128,16 +160,32 @@ function TopUpContent() {
               <img
                 src={`${ASSETS}/u_money-bill.png`}
                 alt=""
-                className="w-[18px] h-[18px] object-contain opacity-50 flex-shrink-0"
+                className="w-4.5 h-4.5 object-contain opacity-50 shrink-0"
               />
               <input
                 type="text"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="Enter Nominal Transfer"
+                placeholder="Enter Nominal Top Up"
                 className="border-none outline-none text-sm text-gray-900 flex-1 bg-transparent placeholder-gray-400 font-[inherit]"
               />
             </div>
+          </div>
+
+          {/* Note */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <p className="text-[15px] font-bold text-gray-900 mb-1.5">
+              Note
+            </p>
+            <p className="text-[13px] text-gray-400 mb-3.5">
+              Add a note for your top up transaction.
+            </p>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Enter Top Up Note"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3.5 font-[inherit] text-sm text-gray-900 resize-y outline-none min-h-30 placeholder-gray-400 focus:border-[#2D39F5] transition-colors"
+            />
           </div>
 
           {/* Payment Method */}
@@ -164,12 +212,12 @@ function TopUpContent() {
                     name="payment"
                     checked={selected === pm.id}
                     onChange={() => setSelected(pm.id)}
-                    className="w-4 h-4 flex-shrink-0 cursor-pointer accent-[#2D39F5]"
+                    className="w-4 h-4 shrink-0 cursor-pointer accent-[#2D39F5]"
                   />
                   <img
                     src={pm.logo}
                     alt={pm.label}
-                    className="w-12 h-6 object-contain flex-shrink-0"
+                    className="w-12 h-6 object-contain shrink-0"
                   />
                   <span className="text-sm font-semibold text-gray-900">
                     {pm.label}
@@ -186,21 +234,21 @@ function TopUpContent() {
 
           <div className="flex flex-col gap-3 mb-4">
             <div className="flex justify-between items-center">
-              <span className="text-[13px] text-gray-500">Order</span>
+              <span className="text-[13px] text-gray-500">Amount</span>
               <span className="text-[13px] font-semibold text-gray-900">
                 {fmt(order)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[13px] text-gray-500">Delivery</span>
+              <span className="text-[13px] text-gray-500">Admin Fee</span>
               <span className="text-[13px] font-semibold text-gray-900">
-                Idr. 0
+                {fmt(adminFee)}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-[13px] text-gray-500">Tax</span>
               <span className="text-[13px] font-semibold text-gray-900">
-                {fmt(TAX)}
+                {taxPercent * 100}%
               </span>
             </div>
           </div>
@@ -208,9 +256,9 @@ function TopUpContent() {
           <hr className="border-gray-200 mb-3.5" />
 
           <div className="flex justify-between items-center mb-5">
-            <span className="text-[13px] text-gray-500">Sub Total</span>
+            <span className="text-[13px] text-gray-500">Total Payment</span>
             <span className="text-[15px] font-extrabold text-gray-900">
-              {fmt(subtotal)}
+              {fmt(totalPayment)}
             </span>
           </div>
 
@@ -221,10 +269,6 @@ function TopUpContent() {
           >
             {isSaving ? "Processing..." : "Submit"}
           </button>
-
-          <p className="text-[11px] text-gray-400 leading-relaxed">
-            *Get Discount if you pay with Bank Central Asia
-          </p>
         </div>
       </div>
 

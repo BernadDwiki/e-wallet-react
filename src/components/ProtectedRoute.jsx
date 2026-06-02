@@ -1,13 +1,16 @@
-import { useLocation, Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.js';
+import { Navigate, Outlet } from "react-router-dom";
 
-export default function ProtectedRoute() {
-  const { currentUser } = useAuth();
-  const location = useLocation();
+export default function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+  const hasPin = localStorage.getItem("has_pin");
 
-  if (!currentUser) {
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  if (!token) {
+    return <Navigate to="/auth/login" replace />;
   }
 
-  return <Outlet />;
+  if (hasPin !== "true") {
+    return <Navigate to="/enter-pin" replace />;
+  }
+
+  return children || <Outlet />;
 }

@@ -15,7 +15,13 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
 
-  const currentUser = useSelector((state) => state.auth.currentUser);
+  const storedUser = typeof window !== 'undefined'
+    ? localStorage.getItem('currentUser')
+    : null;
+  const persistedUser = storedUser ? JSON.parse(storedUser) : null;
+
+  const reduxUser = useSelector((state) => state.auth.currentUser);
+  const currentUser = reduxUser || persistedUser;
   const dispatch = useDispatch();
 
   const login = async (email, password) => {
@@ -39,6 +45,11 @@ export const useAuth = () => {
   };
 
   const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('has_pin');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('persist:root');
     dispatch(logoutAction());
   };
 

@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { validateRegisterForm } from "../utils/validation.js";
-import { useAuth } from "../hooks/useAuth.js";
+import { registerUser } from "../services/authService.js";
 import Modal from "../components/Modal";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
@@ -15,6 +14,8 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
@@ -48,30 +49,34 @@ export default function RegisterPage() {
 
     if (!validateForm()) return;
 
-    try {
-      // Fake registration using localStorage
-      register({
-        email: formData.email,
-        password: formData.password,
-        name: formData.email.split("@")[0], // Simple name extraction
-      });
+    setLoading(true);
+    setApiError("");
 
+    const result = await registerUser({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    setLoading(false);
+
+    if (result.success) {
       setModal({
         isOpen: true,
         title: "Registration Successful!",
-        message: `Welcome! Your account has been created successfully.`,
+        message: "Register success",
         type: "success",
       });
 
-      // Redirect to login after successful registration
       setTimeout(() => {
         navigate("/auth/login");
       }, 2000);
-    } catch (err) {
+    } else {
+      const message = result.message || "Something went wrong";
+      setApiError(message);
       setModal({
         isOpen: true,
         title: "Registration Failed",
-        message: err.message,
+        message,
         type: "error",
       });
     }
@@ -226,11 +231,15 @@ export default function RegisterPage() {
               </p>
             )}
 
+            {apiError && (
+              <p className="text-red-500 text-sm mb-3">{apiError}</p>
+            )}
             <button
               type="submit"
-              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5"
+              disabled={loading}
+              className="btn-primary w-full max-[480px]:text-sm max-[480px]:py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Register
+              {loading ? "Loading..." : "Register"}
             </button>
           </form>
 

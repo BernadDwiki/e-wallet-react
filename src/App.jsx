@@ -14,6 +14,8 @@ import TopUp from './pages/TopUp';
 import EditProfile from './pages/EditProfile';
 import ChangePassword from './pages/ChangePassword';
 import ChangePin from './pages/ChangePin';
+import TopUpSuccess from './pages/TopUpSuccess';
+import TransferSuccess from './pages/TransferSuccess';
 
 function App() {
   return (
@@ -25,16 +27,16 @@ function App() {
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="enter-pin" element={<EnterPin />} />
-            </Route>
           </Route>
+          <Route path="/enter-pin" element={<EnterPin />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transfer" element={<TransferPage />} />
             <Route path="/transfer-nominal" element={<TransferNominal />} />
+            <Route path="/transfer-success" element={<TransferSuccess />} />
             <Route path="/history-transaction" element={<HistoryTransaction />} />
             <Route path="/top-up" element={<TopUp />} />
+            <Route path="/topup-success" element={<TopUpSuccess />} />
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/change-pin" element={<ChangePin />} />

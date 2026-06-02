@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth.js";
+import { getDashboardInfo } from "../services/dashboardService.js";
+import { getTransactionReport } from "../services/reportService.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import StatCards from "../components/StatCards";
@@ -9,6 +12,90 @@ import BottomNav from "../components/BottomNav";
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
+  const [walletData, setWalletData] = useState({
+    balance: 0,
+    income: 0,
+    expense: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState([]);
+  const [chartLoading, setChartLoading] = useState(true);
+  const [days, setDays] = useState(7);
+  const [flow, setFlow] = useState("both");
+
+  const fetchTransactionReport = async (selectedDays = days, selectedFlow = flow) => {
+    setChartLoading(true);
+
+    const result = await getTransactionReport(selectedDays, selectedFlow);
+
+    if (result.success) {
+      const rawData = result.data.data;
+      const groupedData = {};
+
+      rawData.forEach((item) => {
+        const formattedDate = new Date(item.date).toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "short",
+        });
+
+        if (!groupedData[formattedDate]) {
+          groupedData[formattedDate] = {
+            date: formattedDate,
+            rawDate: item.date,
+            income: 0,
+            expense: 0,
+          };
+        }
+
+        if (item.type === "income") {
+          groupedData[formattedDate].income = item.total_transaction;
+        }
+
+        if (item.type === "expense") {
+          groupedData[formattedDate].expense = item.total_transaction;
+        }
+      });
+
+      setChartData(
+        Object.values(groupedData)
+          .sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate))
+          .map((item) => ({
+            rawDate: item.rawDate,
+            income: item.income,
+            expense: item.expense,
+          }))
+      );
+    }
+
+    setChartLoading(false);
+  };
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      setLoading(true);
+
+      const result = await getDashboardInfo();
+
+      if (result.success) {
+        const data = result.data.data;
+
+        setWalletData({
+          balance: data.Balance || 0,
+          income: data.Income || 0,
+          expense: data.Expense || 0,
+        });
+      }
+
+      setLoading(false);
+    };
+
+    fetchDashboard();
+  }, []);
+
+  useEffect(() => {
+    fetchTransactionReport(days, flow);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days, flow]);
 
   return (
     <>
@@ -29,7 +116,7 @@ export default function Dashboard() {
 
             {/* Stat Cards — col 1 row 1 */}
             <div className="lg:col-start-1 lg:row-start-1">
-              <StatCards />
+              <StatCards walletData={walletData} loading={loading} />
             </div>
 
             {/* Fast Service — col 1 row 2 */}
@@ -39,7 +126,14 @@ export default function Dashboard() {
 
             {/* Chart — col 1 row 3 */}
             <div className="lg:col-start-1 lg:row-start-3">
-              <ChartCard />
+              <ChartCard
+                data={chartData}
+                loading={chartLoading}
+                days={days}
+                setDays={setDays}
+                flow={flow}
+                setFlow={setFlow}
+              />
             </div>
 
             {/* Transaction History — col 2 rows 1-3 */}

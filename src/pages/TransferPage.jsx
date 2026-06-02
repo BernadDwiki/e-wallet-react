@@ -1,31 +1,26 @@
-import { useLayoutEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLayoutEffect, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from 'react-redux';
 import { setSelectedPerson } from '../store/slice/transferSlice.js';
+import { getReceivers } from '../services/receiverService.js';
 import { useAuth } from "../hooks/useAuth.js";
-import useLocalStorage from "../hooks/useLocalStorage.js";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
 
-const PEOPLE = [
-  { id: 1, name: "Ghaluh 1", phone: "(239) 555–0108", avatar: "../assets/prof3/Rectangle 648.png", highlighted: true },
-  { id: 2, name: "Ghaluh 2", phone: "(480) 555–0103", avatar: "../assets/prof3/Rectangle 648-1.png", highlighted: false },
-  { id: 3, name: "Ghaluh 3", phone: "(225) 555–0118", avatar: "../assets/prof3/Rectangle 648-2.png", highlighted: true },
-  { id: 4, name: "Ghaluh 4", phone: "(406) 555–0120", avatar: "../assets/prof3/Rectangle 648-3.png", highlighted: false },
-  { id: 5, name: "Ghaluh 5", phone: "(303) 555–0105", avatar: "../assets/prof3/Rectangle 648-4.png", highlighted: true },
-  { id: 6, name: "Ghaluh 6", phone: "(808) 555–0111", avatar: "../assets/prof3/Rectangle 648-5.png", highlighted: false },
-  { id: 7, name: "Ghaluh 7", phone: "(671) 555–0110", avatar: "../assets/prof3/Rectangle 648-6.png", highlighted: true },
-  { id: 8, name: "Ghaluh 8", phone: "(270) 555–0117", avatar: "../assets/prof3/Rectangle 648-7.png", highlighted: false },
-];
+
 
 export default function TransferPage() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser } = useAuth();
   const dispatch = useDispatch();
-  const [search, setSearch] = useLocalStorage("transfer_search", searchParams.get('search') || "");
-  const [starred, setStarred] = useLocalStorage("transfer_starred", {});
+
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [receivers, setReceivers] = useState([]);
+  const [pagination, setPagination] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [starred, setStarred] = useState({});
 
   useLayoutEffect(() => {
     window.history.scrollRestoration = "manual";
@@ -34,27 +29,54 @@ export default function TransferPage() {
     document.documentElement.scrollTop = 0;
   }, []);
 
-  const filtered = PEOPLE.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.phone.includes(search)
-  );
+  const fetchReceivers = async () => {
+    setLoading(true);
+
+    const result = await getReceivers({
+      search,
+      page,
+      limit: 5,
+    });
+
+    if (result.success) {
+      const data = result.data.data;
+
+      setReceivers(data.items);
+
+      setPagination({
+        page: data.page,
+        total: data.total,
+        nextPage: data.next_page,
+        prevPage: data.prev_page,
+      });
+    }
+
+    setLoading(false);
+  };
+
+  // Fetch on page change
+  useEffect(() => {
+    fetchReceivers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  // Debounce search
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setPage(1);
+      fetchReceivers();
+    }, 500);
+
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   const toggleStar = (id) =>
     setStarred((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const handleSelectPerson = (person) => {
-    dispatch(setSelectedPerson(person));
+  const handleSelectReceiver = (receiver) => {
+    dispatch(setSelectedPerson(receiver));
     navigate('/transfer-nominal');
-  };
-
-  const handleSearchChange = (value) => {
-    setSearch(value);
-    if (value.trim()) {
-      setSearchParams({ search: value });
-    } else {
-      setSearchParams({});
-    }
   };
 
   return (
@@ -96,14 +118,14 @@ export default function TransferPage() {
           </div>
 
           {/* Content Card */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-4 md:p-6 flex-1">
+          <div className="bg-white rounded-2xl border border-gray-200 p-4 md:p-6 flex-1 flex flex-col">
 
             {/* Find People Header */}
             <div className="flex flex-col gap-4 mb-5">
               <div>
                 <div className="text-base font-bold text-gray-900 mb-1">Find People</div>
                 <div className="text-xs text-gray-400">
-                  {filtered.length} Result Found For Ghaluh
+                  {pagination.total || 0} Results Found
                 </div>
               </div>
 
@@ -113,7 +135,7 @@ export default function TransferPage() {
                   type="text"
                   placeholder="Enter Number Or Full Name"
                   value={search}
-                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="flex-1 border-none outline-none text-[13px] text-gray-900 bg-transparent placeholder-gray-400"
                   style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 />
@@ -122,68 +144,96 @@ export default function TransferPage() {
             </div>
 
             {/* People Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <tbody>
-                  {filtered.map((person, index) => (
-                    <tr
-                      key={person.id}
-                      onClick={() => handleSelectPerson(person)}
-                      className={`border-b border-gray-200 last:border-b-0 cursor-pointer transition-colors hover:bg-gray-100 ${
-                        person.highlighted
-                          ? "bg-[#EEF0FF]"
-                          : index % 2 === 0
-                          ? "bg-white"
-                          : "bg-gray-50"
-                      }`}
-                    >
-                      {/* Avatar */}
-                      <td className="w-[60px] py-3 pr-2 pl-0">
-                        <div onClick={() => navigate('/transfer-nominal')} className="cursor-pointer">
-                          <img
-                            src={person.avatar}
-                            alt={person.name}
-                            className="w-11 h-11 rounded-[10px] object-cover block"
-                          />
-                        </div>
-                      </td>
+            <div className="overflow-x-auto flex-1">
+              {loading ? (
+                <div className="flex items-center justify-center h-40 text-gray-400">
+                  Loading receivers...
+                </div>
+              ) : (
+                <table className="w-full border-collapse">
+                  <tbody>
+                    {receivers.map((receiver, index) => (
+                      <tr
+                        key={receiver.id}
+                        onClick={() => handleSelectReceiver(receiver)}
+                        className={`border-b border-gray-200 last:border-b-0 cursor-pointer transition-colors hover:bg-gray-100 ${
+                          index % 2 === 0
+                            ? "bg-white"
+                            : "bg-gray-50"
+                        }`}
+                      >
+                        {/* Avatar placeholder */}
+                        <td className="w-[60px] py-3 pr-2 pl-4">
+                          <div className="w-11 h-11 rounded-[10px] bg-[#2D39F5] text-white flex items-center justify-center font-bold text-sm">
+                            {receiver.name.charAt(0).toUpperCase()}
+                          </div>
+                        </td>
 
-                      {/* Name */}
-                      <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-900">
-                        {person.name}
-                      </td>
+                        {/* Name */}
+                        <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-900">
+                          {receiver.name}
+                        </td>
 
-                      {/* Phone - hidden on mobile, visible on md */}
-                      <td className="hidden md:table-cell py-3 px-4 text-[13px] text-gray-500">
-                        {person.phone}
-                      </td>
+                        {/* Email/Phone - hidden on mobile, visible on md */}
+                        <td className="hidden md:table-cell py-3 px-4 text-[13px] text-gray-500">
+                          {receiver.phone_number}
+                        </td>
 
-                      {/* Star */}
-                      <td className="w-11 py-3 pl-2 pr-0 text-right">
-                        <button
-                          onClick={() => toggleStar(person.id)}
-                          className="bg-transparent border-none cursor-pointer p-1 rounded-md hover:bg-gray-100 flex items-center justify-center ml-auto"
-                        >
-                          <img
-                            src="../assets/Star.png"
-                            alt="Favourite"
-                            className={`w-[18px] h-[18px] object-contain transition-opacity ${starred[person.id] ? "opacity-100" : "opacity-40"}`}
-                          />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        {/* Star */}
+                        <td className="w-16 py-3 pl-2 pr-4 text-right">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStar(receiver.id);
+                            }}
+                            className="bg-transparent border-none cursor-pointer p-1 rounded-md hover:bg-gray-100 flex items-center justify-center ml-auto"
+                          >
+                            <img
+                              src="../assets/Star.png"
+                              alt="Favourite"
+                              className={`w-[18px] h-[18px] object-contain transition-opacity ${starred[receiver.id] ? "opacity-100" : "opacity-40"}`}
+                            />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
 
-                  {filtered.length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="text-center py-10 text-gray-400 text-sm">
-                        Tidak ada hasil ditemukan.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    {receivers.length === 0 && !loading && (
+                      <tr>
+                        <td colSpan={4} className="text-center py-10 text-gray-400 text-sm">
+                          Tidak ada hasil ditemukan.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
+
+            {/* Pagination */}
+            {!loading && receivers.length > 0 && (
+              <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setPage(pagination.prevPage)}
+                  disabled={!pagination.prevPage}
+                  className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                >
+                  Previous
+                </button>
+
+                <span className="text-sm text-gray-600">
+                  Page {pagination.page} of {Math.ceil((pagination.total || 0) / 5)}
+                </span>
+
+                <button
+                  onClick={() => setPage(pagination.nextPage)}
+                  disabled={!pagination.nextPage}
+                  className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
 
         </main>

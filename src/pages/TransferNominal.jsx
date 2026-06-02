@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { setAmount, setNotes } from '../store/slice/transferSlice.js';
+import { setAmount, setNotes, clearTransfer } from '../store/slice/transferSlice.js';
 import { addTransferHistory } from '../store/slice/historySlice.js';
 import { useAuth } from '../hooks/useAuth.js';
 import Topbar from '../components/Topbar';
@@ -9,8 +9,7 @@ import Sidebar from '../components/Sidebar';
 import { PersonInfo, AmountSection, NotesSection } from '../components/TransferSections';
 import BottomNav from '../components/BottomNav';
 import PinModal from '../components/PinModal';
-import TransferSuccessModal from '../components/TransferSuccessModal';
-import TransferFailedModal from '../components/TransferFailedModal';
+import { createTransfer } from '../services/transferService.js';
 import React from 'react';
 
 function Steps() {
@@ -44,34 +43,87 @@ function Steps() {
 
 export default function TransferNominal() {
   const navigate = useNavigate();
-  const { currentUser, transfer } = useAuth();
   const dispatch = useDispatch();
+  const { currentUser } = useAuth();
   const selectedPerson = useSelector((state) => state.transfer.selectedPerson);
   const amount = useSelector((state) => state.transfer.amount);
   const notes = useSelector((state) => state.transfer.notes);
   const [showPinModal, setShowPinModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showFailedModal, setShowFailedModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const formatAmountValue = (value) => {
+    const numeric = value.replace(/\D/g, '');
+    return numeric ? parseInt(numeric, 10) : 0;
+  };
+
+  const handleSubmit = () => {
+    if (!selectedPerson) {
+      alert('Please select a receiver first.');
+      return;
+    }
+
+    const transferAmount = formatAmountValue(amount);
+    if (!amount || transferAmount <= 0) {
+      alert('Amount must be greater than 0');
+      return;
+    }
+
+    setShowPinModal(true);
+  };
 
   const handlePinSubmit = async (pin) => {
-    if (pin === currentUser.pin) {
-      try {
-        const transferAmount = parseInt(amount.replace(/\D/g, '')) || 0;
-        await transfer(transferAmount);
-        dispatch(addTransferHistory({
-          recipient: selectedPerson,
-          amount: transferAmount,
-          notes,
-          type: 'outgoing'
-        }));
-        setShowSuccessModal(true);
-      } catch {
-        setShowFailedModal(true);
-      }
-    } else {
-      setShowFailedModal(true);
-    }
     setShowPinModal(false);
+
+    if (!pin || pin.length < 6) {
+      alert('PIN is required');
+      return;
+    }
+
+    if (!selectedPerson) {
+      alert('Receiver is required');
+      return;
+    }
+
+    const transferAmount = formatAmountValue(amount);
+    if (transferAmount <= 0) {
+      alert('Amount must be greater than 0');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const result = await createTransfer({
+      receiver_id: selectedPerson.id,
+      amount: transferAmount,
+      note: notes,
+      pin,
+    });
+
+    setIsSubmitting(false);
+
+    if (result.success) {
+      dispatch(addTransferHistory({
+        recipient: selectedPerson,
+        amount: transferAmount,
+        notes,
+        type: 'outgoing',
+      }));
+      dispatch(clearTransfer());
+      navigate('/transfer-success', { state: result.data.data });
+      return;
+    }
+
+    if (result.message === 'invalid pin') {
+      alert('PIN tidak valid');
+      return;
+    }
+
+    if (result.message === 'insufficient balance') {
+      alert('Saldo tidak mencukupi');
+      return;
+    }
+
+    alert(result.message || 'Transfer failed');
   };
 
   return (
@@ -99,15 +151,20 @@ export default function TransferNominal() {
 
         {/* Content Card */}
         <div className="bg-white rounded-2xl border border-gray-200 p-7 flex flex-col gap-7">
-          <PersonInfo name={selectedPerson?.name} phone={selectedPerson?.phone} avatar={selectedPerson?.avatar} />
+          <PersonInfo
+            name={selectedPerson?.name}
+            phone={selectedPerson?.phone_number || selectedPerson?.phone}
+            avatar={selectedPerson?.avatar}
+          />
           <AmountSection value={amount} onChange={(e) => dispatch(setAmount(e.target.value))} />
           <NotesSection value={notes} onChange={(e) => dispatch(setNotes(e.target.value))} />
 
           <button
-            onClick={() => setShowPinModal(true)}
-            className="w-full py-4 bg-[#2D39F5] text-white border-none rounded-xl font-[inherit] text-[15px] font-bold cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="w-full py-4 bg-[#2D39F5] text-white border-none rounded-xl font-[inherit] text-[15px] font-bold cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            Submit &amp; Transfer
+            {isSubmitting ? 'Submitting...' : 'Submit & Transfer'}
           </button>
         </div>
 
@@ -116,33 +173,7 @@ export default function TransferNominal() {
           isOpen={showPinModal}
           onClose={() => setShowPinModal(false)}
           onPinSubmit={handlePinSubmit}
-          recipientName="Ghaluh 1"
-        />
-
-        {/* Modal Transfer Success */}
-        <TransferSuccessModal
-          isOpen={showSuccessModal}
-          onClose={() => setShowSuccessModal(false)}
-          onTransferAgain={() => {
-            setShowSuccessModal(false);
-            navigate('/transfer');
-          }}
-          recipientName="Ghaluh 1"
-        />
-
-        {/* Modal Transfer Failed */}
-        <TransferFailedModal
-          isOpen={showFailedModal}
-          onClose={() => setShowFailedModal(false)}
-          onTryAgain={() => {
-            setShowFailedModal(false);
-            setShowPinModal(true);
-          }}
-          onBackToDashboard={() => {
-            setShowFailedModal(false);
-            navigate('/dashboard');
-          }}
-          recipientName="Ghaluh 1"
+          recipientName={selectedPerson?.name || 'Recipient'}
         />
       </main>
 

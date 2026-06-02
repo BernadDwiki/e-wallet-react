@@ -1,14 +1,15 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth.js";
+import { setPin } from "../services/authService";
 import Modal from "../components/Modal";
 
 export default function EnterPin() {
   const navigate = useNavigate();
-  const { changePin } = useAuth();
   const [pins, setPins] = useState(["", "", "", "", "", ""]);
-  const inputRefs = useRef([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [modal, setModal] = useState({ isOpen: false, type: "", message: "" });
+  const inputRefs = useRef([]);
 
   const handleChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
@@ -40,7 +41,7 @@ export default function EnterPin() {
     inputRefs.current[nextEmpty === -1 ? 5 : nextEmpty]?.focus();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const pin = pins.join("");
     if (pin.length < 6) {
       setModal({
@@ -51,17 +52,25 @@ export default function EnterPin() {
       return;
     }
 
-    // Save PIN via authentication context
-    changePin(pin);
+    setLoading(true);
+    setError("");
 
-    setModal({
-      isOpen: true,
-      type: "success",
-      message: "PIN saved successfully!",
-    });
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 2000);
+    const result = await setPin(pin);
+    setLoading(false);
+
+    if (result.success) {
+      localStorage.setItem("has_pin", "true");
+      setModal({
+        isOpen: true,
+        type: "success",
+        message: "PIN saved successfully!",
+      });
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
+    } else {
+      setError(result.message);
+    }
   };
 
   const onCloseModal = () => {
@@ -72,24 +81,17 @@ export default function EnterPin() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* LEFT SIDE */}
       <div className="w-full md:w-1/2 bg-white flex flex-col justify-center px-10 py-16 md:px-24">
-        {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
           <img src="/assets/dompet1.png" alt="" className="w-8 h-8" />
           <span className="text-indigo-500 font-bold text-lg">E-Wallet</span>
         </div>
 
-        {/* Heading */}
-        <h1 className="text-2xl font-bold text-gray-800 mb-3">
-          Enter Your Pin 👋
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-3">Enter Your Pin 👋</h1>
         <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-          Please save your pin because this is important for your account
-          security.
+          Please save your pin because this is important for your account security.
         </p>
 
-        {/* PIN Inputs */}
         <div className="flex gap-3 mb-10" onPaste={handlePaste}>
           {pins.map((pin, index) => (
             <input
@@ -115,7 +117,8 @@ export default function EnterPin() {
           ))}
         </div>
 
-        {/* Submit Button */}
+        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+
         <button
           onClick={handleSubmit}
           className={`
@@ -127,12 +130,11 @@ export default function EnterPin() {
                 : "bg-indigo-300 cursor-not-allowed"
             }
           `}
-          disabled={!isComplete}
+          disabled={!isComplete || loading}
         >
-          Submit
+          {loading ? "Saving..." : "Submit"}
         </button>
 
-        {/* Forgot PIN */}
         <p className="text-center text-sm text-gray-400 mt-4">
           Forgot Your Pin?{" "}
           <a href="#" className="text-indigo-500 font-semibold hover:underline">
@@ -141,12 +143,10 @@ export default function EnterPin() {
         </p>
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="hidden md:flex w-1/2 bg-linear-to-br from-indigo-500 to-indigo-700 items-center justify-center">
         <img src="/assets/enterpin1.png" alt="" className="w-149" />
       </div>
 
-      {/* Modal */}
       <Modal
         isOpen={modal.isOpen}
         onClose={onCloseModal}
