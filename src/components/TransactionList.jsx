@@ -66,8 +66,7 @@ export default function TransactionList({ initialSearch = "" }) {
     console.log("TransactionList payload:", payload);
     console.log("TransactionList items:", items);
 
-    const transferOnly = items.filter((item) => item.type === "transfer");
-    setTransactions(transferOnly);
+    setTransactions(items);
     setPagination({
       page,
       limit,

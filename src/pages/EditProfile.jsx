@@ -1,12 +1,24 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { useAuth } from "../hooks/useAuth.js";
+import { updateProfile } from "../services/authService.js";
+import { setCurrentUser } from "../store/slice/authSlice.js";
 import Modal from "../components/Modal";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
 
 const ASSETS = "/assets";
+const API_BASE = "http://localhost:8080";
+
+// Utility function to prepend API base URL to image paths
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return `${ASSETS}/User.png`;
+  if (imagePath.startsWith("http")) return imagePath; // Already full URL
+  if (imagePath.startsWith("/img/")) return `${API_BASE}${imagePath}`; // Relative path from API
+  return imagePath; // Assume it's already accessible
+};
 
 // ─── INPUT FIELD ──────────────────────────────────────────────────────────────
 function InputField({ label, type, placeholder, icon, value, onChange, disabled = false }) {
@@ -33,8 +45,11 @@ function InputField({ label, type, placeholder, icon, value, onChange, disabled 
 }
 
 function ProfileCard() {
-  const { currentUser, updateUser } = useAuth();
-  const [profileImage, setProfileImage] = React.useState(`${ASSETS}/User.png`);
+  const dispatch = useDispatch();
+  const { currentUser } = useAuth();
+  const fileInputRef = React.useRef(null);
+  const [profileImage, setProfileImage] = React.useState(getImageUrl(currentUser?.picture) || `${ASSETS}/User.png`);
+  const [selectedFile, setSelectedFile] = React.useState(null);
   const [name, setName] = React.useState(currentUser?.name || "");
   const [phone, setPhone] = React.useState(currentUser?.phone || "");
   const [email, setEmail] = React.useState(currentUser?.email || "");
@@ -50,12 +65,82 @@ function ProfileCard() {
     setName(currentUser?.name || "");
     setPhone(currentUser?.phone || "");
     setEmail(currentUser?.email || "");
+    setProfileImage(getImageUrl(currentUser?.picture) || `${ASSETS}/User.png`);
   }, [currentUser]);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!allowedTypes.includes(file.type)) {
+      setModal({
+        isOpen: true,
+        title: "Invalid File",
+        message: "Only JPG, JPEG, or PNG images are allowed.",
+        type: "error"
+      });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setModal({
+        isOpen: true,
+        title: "File Too Large",
+        message: "Image size must be 2MB or less.",
+        type: "error"
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    setProfileImage(URL.createObjectURL(file));
+  };
+
+  const handleChooseFile = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleDeleteProfile = () => {
+    setSelectedFile(null);
+    setProfileImage(`${ASSETS}/User.png`);
+  };
 
   const handleSubmit = async () => {
     setIsSaving(true);
     try {
-      await updateUser({ name, phone, email });
+      console.log("Submitting profile update with:", {
+        name,
+        phone,
+        selectedFile: selectedFile?.name,
+      });
+
+      const result = await updateProfile({
+        name,
+        phone_number: phone,
+        profile_picture: selectedFile,
+      });
+
+      console.log("Update result:", result);
+
+      if (!result.success) {
+        throw new Error(result.message || "Gagal memperbarui profil.");
+      }
+
+      const updatedProfile = result.data?.data;
+      if (updatedProfile) {
+        const updatedCurrentUser = {
+          ...currentUser,
+          name: updatedProfile.name,
+          phone: updatedProfile.phone_number || updatedProfile.phoneNumber || phone,
+          picture: updatedProfile.picture || currentUser?.picture,
+        };
+
+        dispatch(setCurrentUser(updatedCurrentUser));
+        localStorage.setItem("currentUser", JSON.stringify(updatedCurrentUser));
+        setProfileImage(getImageUrl(updatedProfile.picture) || getImageUrl(currentUser?.picture) || profileImage);
+      }
+
       setModal({
         isOpen: true,
         title: "Profile Updated",
@@ -63,6 +148,7 @@ function ProfileCard() {
         type: "success"
       });
     } catch (error) {
+      console.error("Profile update error:", error);
       setModal({
         isOpen: true,
         title: "Update Failed",
@@ -91,7 +177,8 @@ function ProfileCard() {
         </div>
         <div className="flex flex-col gap-2">
           <button
-            onClick={() => setProfileImage(`${ASSETS}/ghaluh.png`)}
+            type="button"
+            onClick={handleChooseFile}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white cursor-pointer hover:opacity-90 transition-opacity"
             style={{ backgroundColor: "#2D39F5", border: "1.5px solid #2D39F5" }}
           >
@@ -99,7 +186,8 @@ function ProfileCard() {
             Change Profile
           </button>
           <button
-            onClick={() => setProfileImage(`${ASSETS}/User.png`)}
+            type="button"
+            onClick={handleDeleteProfile}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity"
             style={{ backgroundColor: "#FEF2F2", color: "#DC2626", border: "1.5px solid #DC2626" }}
           >
@@ -107,6 +195,13 @@ function ProfileCard() {
             Delete Profile
           </button>
         </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png, image/jpeg"
+          onChange={handleFileChange}
+          className="hidden"
+        />
       </div>
 
       <p className="text-xs text-gray-400 -mt-2">

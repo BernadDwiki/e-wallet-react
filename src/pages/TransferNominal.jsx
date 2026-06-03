@@ -9,6 +9,7 @@ import Sidebar from '../components/Sidebar';
 import { PersonInfo, AmountSection, NotesSection } from '../components/TransferSections';
 import BottomNav from '../components/BottomNav';
 import PinModal from '../components/PinModal';
+import TransferFailedModal from '../components/TransferFailedModal';
 import { createTransfer } from '../services/transferService.js';
 import React from 'react';
 
@@ -49,6 +50,8 @@ export default function TransferNominal() {
   const amount = useSelector((state) => state.transfer.amount);
   const notes = useSelector((state) => state.transfer.notes);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showFailedModal, setShowFailedModal] = useState(false);
+  const [retryWithPin, setRetryWithPin] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formatAmountValue = (value) => {
@@ -58,13 +61,15 @@ export default function TransferNominal() {
 
   const handleSubmit = () => {
     if (!selectedPerson) {
-      alert('Please select a receiver first.');
+      setRetryWithPin(false);
+      setShowFailedModal(true);
       return;
     }
 
     const transferAmount = formatAmountValue(amount);
     if (!amount || transferAmount <= 0) {
-      alert('Amount must be greater than 0');
+      setRetryWithPin(false);
+      setShowFailedModal(true);
       return;
     }
 
@@ -75,18 +80,21 @@ export default function TransferNominal() {
     setShowPinModal(false);
 
     if (!pin || pin.length < 6) {
-      alert('PIN is required');
+      setRetryWithPin(false);
+      setShowFailedModal(true);
       return;
     }
 
     if (!selectedPerson) {
-      alert('Receiver is required');
+      setRetryWithPin(false);
+      setShowFailedModal(true);
       return;
     }
 
     const transferAmount = formatAmountValue(amount);
     if (transferAmount <= 0) {
-      alert('Amount must be greater than 0');
+      setRetryWithPin(false);
+      setShowFailedModal(true);
       return;
     }
 
@@ -113,17 +121,8 @@ export default function TransferNominal() {
       return;
     }
 
-    if (result.message === 'invalid pin') {
-      alert('PIN tidak valid');
-      return;
-    }
-
-    if (result.message === 'insufficient balance') {
-      alert('Saldo tidak mencukupi');
-      return;
-    }
-
-    alert(result.message || 'Transfer failed');
+    setRetryWithPin(true);
+    setShowFailedModal(true);
   };
 
   return (
@@ -173,6 +172,23 @@ export default function TransferNominal() {
           isOpen={showPinModal}
           onClose={() => setShowPinModal(false)}
           onPinSubmit={handlePinSubmit}
+          recipientName={selectedPerson?.name || 'Recipient'}
+        />
+
+        <TransferFailedModal
+          isOpen={showFailedModal}
+          onClose={() => setShowFailedModal(false)}
+          onTryAgain={() => {
+            setShowFailedModal(false);
+            if (retryWithPin) {
+              setShowPinModal(true);
+            }
+          }}
+          onBackToDashboard={() => {
+            setShowFailedModal(false);
+            dispatch(clearTransfer());
+            navigate('/dashboard');
+          }}
           recipientName={selectedPerson?.name || 'Recipient'}
         />
       </main>

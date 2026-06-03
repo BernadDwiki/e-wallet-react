@@ -71,20 +71,10 @@ export default function ChangePin() {
       return;
     }
 
-    if (oldPin !== currentUser.pin) {
-      setModal({
-        isOpen: true,
-        title: "PIN Lama Salah",
-        message: "PIN lama tidak sesuai. Coba lagi.",
-        type: "error"
-      });
-      return;
-    }
-
     setModal({
       isOpen: true,
-      title: "PIN Lama Benar",
-      message: "PIN lama valid. Silakan masukkan PIN baru.",
+      title: "PIN Lama Diterima",
+      message: "PIN lama diisi. Silakan masukkan PIN baru.",
       type: "success"
     });
   };
@@ -122,8 +112,19 @@ export default function ChangePin() {
   };
 
   const confirmPinAndSave = async () => {
+    const oldPin = oldPins.join('');
     const newPin = newPins.join('');
     const confirmPin = confirmPins.join('');
+
+    if (newPin.length < 6) {
+      setModal({
+        isOpen: true,
+        title: "PIN Baru Belum Lengkap",
+        message: "Silakan isi 6 digit PIN baru.",
+        type: "error"
+      });
+      return;
+    }
 
     if (confirmPin.length < 6) {
       setModal({
@@ -147,7 +148,7 @@ export default function ChangePin() {
 
     setIsSaving(true);
     try {
-      await changePin(newPin);
+      await changePin(oldPin, newPin);
       setModal({
         isOpen: true,
         title: "Berhasil",

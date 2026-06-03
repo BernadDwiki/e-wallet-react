@@ -44,6 +44,10 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const getNameFromEmail = (email) => {
+    return email.split('@')[0] || '';
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -55,6 +59,7 @@ export default function RegisterPage() {
     const result = await registerUser({
       email: formData.email,
       password: formData.password,
+      name: getNameFromEmail(formData.email),
     });
 
     setLoading(false);

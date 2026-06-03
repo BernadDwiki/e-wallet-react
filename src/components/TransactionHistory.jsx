@@ -1,18 +1,41 @@
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 import TransactionItem from './TransactionItem';
+import { getTransactionHistory } from '../services/reportService';
 
 const formatRp = (n) => `Rp ${n.toLocaleString('id-ID')}`;
 
 export default function TransactionHistory() {
-  const transfers = useSelector((state) => state.history.transfers);
-  const transactions = transfers.slice(0, 9).map((transfer) => ({
-    id: transfer.id,
-    name: transfer.recipient?.name || 'Unknown',
-    type: 'Send',
-    amount: `-${formatRp(transfer.amount)}`,
-    positive: false,
-    avatar: transfer.recipient?.avatar || './assets/prof/1.png',
-  }));
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTransactions = async () => {
+      setLoading(true);
+
+      const result = await getTransactionHistory({ page: 1, limit: 5, search: '' });
+
+      if (result.success) {
+        const items = Array.isArray(result.data?.data?.items)
+          ? result.data.data.items
+          : [];
+
+        setTransactions(
+          items.map((item) => ({
+            id: item.id,
+            name: item.name || 'Unknown',
+            type: item.direction === 'expense' ? 'Send' : 'Receive',
+            amount: `${item.direction === 'expense' ? '-' : '+'}${formatRp(item.amount)}`,
+            positive: item.direction !== 'expense',
+            avatar: '../assets/prof2/Rectangle 648.png',
+          }))
+        );
+      }
+
+      setLoading(false);
+    };
+
+    loadTransactions();
+  }, []);
 
   return (
     <div className="overflow-hidden shadow-sm rounded-[24px] border border-gray-200">

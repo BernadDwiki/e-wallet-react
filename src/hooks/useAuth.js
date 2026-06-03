@@ -2,6 +2,8 @@ import { useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AuthContext } from '../contexts/auth/context.js';
 import { login as loginAction, logout as logoutAction, setCurrentUser } from '../store/slice/authSlice.js';
+import { changePin as changePinService } from '../services/authService.js';
+import { changePassword as changePasswordService } from '../services/authService.js';
 
 /**
  * Custom hook untuk mengakses autentikasi.
@@ -89,36 +91,36 @@ export const useAuth = () => {
     return updatedUser;
   };
 
-  const changePassword = (currentPassword, newPassword) => {
-    if (!currentUser) {
-      throw new Error('No current user');
+  const changePassword = async (currentPassword, newPassword) => {
+    const result = await changePasswordService({ currentPassword, newPassword });
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to change password');
     }
-    const user = context.users.find((userItem) => userItem.id === currentUser.id);
-    if (!user) {
-      throw new Error('User not found');
-    }
-    if (user.password !== currentPassword) {
-      throw new Error('Current password is incorrect');
-    }
-    const updatedUser = { ...user, password: newPassword };
-    context.updateUser(updatedUser);
-    return updatedUser;
+    return result.data;
   };
 
-  const changePin = (newPin) => {
+  const changePin = async (currentPin, newPin) => {
     if (!currentUser) {
       throw new Error('No current user');
     }
-    if (!/^[0-9]{6}$/.test(newPin)) {
+    if (!/^[0-9]{6}$/.test(currentPin) || !/^[0-9]{6}$/.test(newPin)) {
       throw new Error('PIN must be 6 digits');
     }
-    const user = context.users.find((userItem) => userItem.id === currentUser.id);
-    if (!user) {
-      throw new Error('User not found');
+
+    const result = await changePinService({ currentPin, newPin });
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to change PIN');
     }
-    const updatedUser = { ...user, pin: newPin };
-    context.updateUser(updatedUser);
-    syncCurrentUser(updatedUser);
+
+    const updatedUser = {
+      ...currentUser,
+      pin: newPin,
+    };
+    dispatch(setCurrentUser(updatedUser));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    }
+
     return updatedUser;
   };
 

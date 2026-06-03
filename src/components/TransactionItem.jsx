@@ -11,7 +11,7 @@ import React from 'react';
 const TransactionItem = ({ transaction }) => {
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors">
-      <td className="py-4 px-5">
+      <td className="py-4 px-4">
         <div className="flex items-center gap-4">
           <img
             src={transaction.avatar}

@@ -1,19 +1,26 @@
+import { useNavigate } from 'react-router-dom';
+
 const ASSETS = {
   topupIcon: "./assets/u_money-insert.png",
   sendWhite: "./assets/Send-white.png",
 };
 
 export default function FastService() {
+  const navigate = useNavigate();
+
+  const actions = [
+    { label: "Top Up", icon: ASSETS.topupIcon, path: "/top-up" },
+    { label: "Transfer", icon: ASSETS.sendWhite, path: "/transfer" },
+  ];
+
   return (
     <div className="bg-white rounded-[14px] border border-gray-200 px-5 py-4 flex items-center justify-between flex-wrap gap-3">
       <span className="text-[15px] font-bold">Fast Service</span>
       <div className="flex gap-2.5">
-        {[
-          { label: "Top Up", icon: ASSETS.topupIcon },
-          { label: "Transfer", icon: ASSETS.sendWhite },
-        ].map((btn) => (
+        {actions.map((btn) => (
           <button
             key={btn.label}
+            onClick={() => navigate(btn.path)}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2d39f5] text-white text-[13px] font-bold border-none cursor-pointer hover:opacity-90 transition-opacity"
           >
             <img

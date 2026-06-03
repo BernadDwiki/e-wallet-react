@@ -41,10 +41,11 @@ const registerSchema = Joi.object({
 });
 
 const changePasswordSchema = Joi.object({
-  currentPassword: Joi.string().required().messages({
-    'string.empty': 'Current password is required'
+  currentPassword: Joi.string().required().min(8).messages({
+    'string.empty': 'Current password is required',
+    'string.min': 'Current password must be at least 8 characters long'
   }),
-  newPassword: passwordSchema,
+  newPassword: passwordSchema.min(8),
   confirmPassword: Joi.string().required().valid(Joi.ref('newPassword')).messages({
     'any.only': 'Passwords do not match',
     'string.empty': 'Please confirm your new password'
