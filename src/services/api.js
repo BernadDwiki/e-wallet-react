@@ -22,6 +22,7 @@ api.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("has_pin");
       localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("persist:e-wallet-root");
       localStorage.removeItem("persist:root");
       window.location.href = "/auth/login";
     }

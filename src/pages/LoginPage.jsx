@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { validateLoginForm } from "../utils/validation.js";
 import { login } from "../store/slice/authSlice.js";
 import { getProfile } from "../services/authService.js";
@@ -9,7 +9,7 @@ import Modal from "../components/Modal";
 export default function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.auth);
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -51,6 +51,7 @@ export default function LoginPage() {
     if (!validateForm()) return;
 
     setApiError("");
+    setLoading(true);
 
     try {
       const result = await dispatch(login(formData)).unwrap();
@@ -80,16 +81,15 @@ export default function LoginPage() {
         localStorage.setItem("currentUser", JSON.stringify(sessionUser));
       }
 
+      const redirectPath = hasPin ? "/dashboard" : "/enter-pin";
+      navigate(redirectPath);
+
       setModal({
         isOpen: true,
         title: "Login Successful!",
         message: "Login success",
         type: "success",
       });
-
-      setTimeout(() => {
-        navigate(hasPin ? "/dashboard" : "/enter-pin");
-      }, 1000);
     } catch (err) {
       const errorMessage = err || "Login failed";
       setApiError(errorMessage);
@@ -99,6 +99,8 @@ export default function LoginPage() {
         message: errorMessage,
         type: "error"
       });
+    } finally {
+      setLoading(false);
     }
   };
 

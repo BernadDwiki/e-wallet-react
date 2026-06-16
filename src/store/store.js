@@ -17,7 +17,7 @@ import historyReducer from './slice/historySlice.js';
 const persistConfig = {
   key: 'e-wallet-root',
   storage,
-  whitelist: ['auth', 'transfer', 'history']
+  whitelist: ['auth']
 };
 
 const persistedReducer = persistCombineReducers(persistConfig, {

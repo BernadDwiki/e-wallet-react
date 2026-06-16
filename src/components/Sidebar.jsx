@@ -2,7 +2,6 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth.js";
 import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../services/authService";
 import LogoutConfirmModal from "./LogoutConfirmModal";
 
 const ASSETS = {
@@ -43,14 +42,8 @@ export default function Sidebar() {
     setShowLogoutModal(false);
 
     try {
-      const result = await logoutUser();
-      if (result.success) {
-        logout();
-        localStorage.removeItem("persist:root");
-        navigate("/auth/login");
-      } else {
-        alert(result.message);
-      }
+      await logout();
+      navigate("/auth/login");
     } catch (error) {
       console.error(error);
     }

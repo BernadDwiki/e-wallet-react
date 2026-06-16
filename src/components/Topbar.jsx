@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../services/authService";
 import { useAuth } from "../hooks/useAuth.js";
 import LogoutConfirmModal from "./LogoutConfirmModal";
 
@@ -35,14 +34,8 @@ export default function Topbar({ currentUser }) {
     setShowLogoutModal(false);
 
     try {
-      const result = await logoutUser();
-      if (result.success) {
-        logout();
-        localStorage.removeItem("persist:root");
-        navigate("/auth/login");
-      } else {
-        alert(result.message);
-      }
+      await logout();
+      navigate("/auth/login");
     } catch (error) {
       console.error(error);
     }

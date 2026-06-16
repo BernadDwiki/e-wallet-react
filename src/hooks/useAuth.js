@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AuthContext } from '../contexts/auth/context.js';
-import { login as loginThunk, logout as logoutThunk, setCurrentUser } from '../store/slice/authSlice.js';
+import { logout as logoutThunk, setCurrentUser } from '../store/slice/authSlice.js';
 import { changePin as changePinService } from '../services/authService.js';
 import { changePassword as changePasswordService } from '../services/authService.js';
 
@@ -49,17 +49,23 @@ export const useAuth = () => {
     return user;
   };
 
-  const logout = async () => {
+  const clearSession = () => {
+    if (typeof window === 'undefined') return;
     localStorage.removeItem('token');
     localStorage.removeItem('has_pin');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('persist:e-wallet-root');
     localStorage.removeItem('persist:root');
-    
+  };
+
+  const logout = async () => {
     try {
       await dispatch(logoutThunk()).unwrap();
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      clearSession();
       dispatch(setCurrentUser(null));
     }
   };
@@ -191,39 +197,5 @@ export const useAuth = () => {
     transfer,
     authLoading,
     authError,
-  };
-};
-    }
-    if (amount <= 0) {
-      throw new Error('Transfer amount must be positive');
-    }
-    const user = context.users.find((userItem) => userItem.id === currentUser.id);
-    if (!user) {
-      throw new Error('User not found');
-    }
-    const currentBalance = user.balance || 0;
-    if (currentBalance < amount) {
-      throw new Error('Insufficient balance');
-    }
-    const updatedUser = {
-      ...user,
-      balance: currentBalance - amount,
-      expense: (user.expense || 0) + amount
-    };
-    context.updateUser(updatedUser);
-    syncCurrentUser(updatedUser);
-    return updatedUser;
-  };
-
-  return {
-    ...context,
-    currentUser,
-    login,
-    logout,
-    updateUser,
-    changePassword,
-    changePin,
-    topup,
-    transfer,
   };
 };
