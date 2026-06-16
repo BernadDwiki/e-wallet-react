@@ -1,21 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { validateLoginForm } from "../utils/validation.js";
-import { login as loginAction } from "../store/slice/authSlice.js";
-import { loginUser, getProfile } from "../services/authService.js";
+import { login } from "../store/slice/authSlice.js";
+import { getProfile } from "../services/authService.js";
 import Modal from "../components/Modal";
  
 export default function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
   const [modal, setModal] = useState({
     isOpen: false,
@@ -50,89 +50,56 @@ export default function LoginPage() {
 
     if (!validateForm()) return;
 
-    setLoading(true);
     setApiError("");
 
-    const result = await loginUser(formData);
-    setLoading(false);
+    try {
+      const result = await dispatch(login(formData)).unwrap();
 
-    if (!result.success) {
-      setApiError(result.message);
+      const token = result.data.token;
+      const hasPin = result.data.has_pin === true;
+
+      // simpan token dulu
+      localStorage.setItem("token", token);
+      localStorage.setItem("has_pin", String(hasPin));
+      localStorage.setItem("isAuthenticated", "true");
+
+      // ambil profile user
+      const profileResult = await getProfile();
+
+      if (profileResult.success) {
+        const user = profileResult.data.data;
+        const sessionUser = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone_number: user.phone_number,
+          phone: user.phone_number,
+          picture: user.picture,
+        };
+
+        localStorage.setItem("currentUser", JSON.stringify(sessionUser));
+      }
+
+      setModal({
+        isOpen: true,
+        title: "Login Successful!",
+        message: "Login success",
+        type: "success",
+      });
+
+      setTimeout(() => {
+        navigate(hasPin ? "/dashboard" : "/enter-pin");
+      }, 1000);
+    } catch (err) {
+      const errorMessage = err || "Login failed";
+      setApiError(errorMessage);
       setModal({
         isOpen: true,
         title: "Login Failed",
-        message: result.message,
+        message: errorMessage,
         type: "error"
       });
-      return;
     }
-
-
-    const response = result.data;
-
-    const token =
-      response.data.token;
-
-    const hasPin =
-      response.data.has_pin === true;
-
-    // simpan token dulu
-    localStorage.setItem(
-      "token",
-      token
-    );
-
-    localStorage.setItem(
-      "has_pin",
-      String(hasPin)
-    );
-
-    localStorage.setItem(
-      "isAuthenticated",
-      "true"
-    );
-
-    // ambil profile user
-    const profileResult =
-      await getProfile();
-
-    if (profileResult.success) {
-      const user =
-        profileResult.data.data;
-
-      const sessionUser = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone_number:
-          user.phone_number,
-        // also include `phone` for existing components that expect `currentUser.phone`
-        phone: user.phone_number,
-        picture: user.picture,
-      };
-
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify(sessionUser)
-      );
-
-      dispatch(
-        loginAction(sessionUser)
-      );
-    }
-
-    setModal({
-      isOpen: true,
-      title: "Login Successful!",
-      message: "Login success",
-      type: "success",
-    });
-
-    setTimeout(() => {
-      navigate(
-        hasPin ? "/dashboard" : "/enter-pin"
-      );
-    }, 1000);
   };
 
   const closeModal = () => {

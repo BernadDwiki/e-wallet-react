@@ -1,13 +1,13 @@
 import { useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AuthContext } from '../contexts/auth/context.js';
-import { login as loginAction, logout as logoutAction, setCurrentUser } from '../store/slice/authSlice.js';
+import { login as loginThunk, logout as logoutThunk, setCurrentUser } from '../store/slice/authSlice.js';
 import { changePin as changePinService } from '../services/authService.js';
 import { changePassword as changePasswordService } from '../services/authService.js';
 
 /**
  * Custom hook untuk mengakses autentikasi.
- * Login/logout dikelola oleh Redux, sementara register dikelola oleh context.
+ * Login/logout dikelola oleh Redux dengan async thunk, sementara register dikelola oleh context.
  *
  * @returns {object} { currentUser, login, register, logout, updateUser, changePassword, changePin }
  */
@@ -23,6 +23,8 @@ export const useAuth = () => {
   const persistedUser = storedUser ? JSON.parse(storedUser) : null;
 
   const reduxUser = useSelector((state) => state.auth.currentUser);
+  const authLoading = useSelector((state) => state.auth.loading);
+  const authError = useSelector((state) => state.auth.error);
   const currentUser = reduxUser || persistedUser;
   const dispatch = useDispatch();
 
@@ -40,19 +42,26 @@ export const useAuth = () => {
       pin: user.pin || '',
       balance: user.balance || 0,
       income: user.income || 0,
-      expense: user.expense || 0    };
+      expense: user.expense || 0
+    };
 
-    dispatch(loginAction(sessionUser));
+    dispatch(setCurrentUser(sessionUser));
     return user;
   };
 
-  const logout = () => {
+  const logout = async () => {
     localStorage.removeItem('token');
     localStorage.removeItem('has_pin');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('persist:root');
-    dispatch(logoutAction());
+    
+    try {
+      await dispatch(logoutThunk()).unwrap();
+    } catch (error) {
+      console.error('Logout error:', error);
+      dispatch(setCurrentUser(null));
+    }
   };
 
   const syncCurrentUser = (user) => {
@@ -148,6 +157,42 @@ export const useAuth = () => {
   const transfer = (amount) => {
     if (!currentUser) {
       throw new Error('No current user');
+    }
+    if (amount <= 0) {
+      throw new Error('Transfer amount must be positive');
+    }
+    const user = context.users.find((userItem) => userItem.id === currentUser.id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const currentBalance = user.balance || 0;
+    if (currentBalance < amount) {
+      throw new Error('Insufficient balance');
+    }
+    const updatedUser = {
+      ...user,
+      balance: currentBalance - amount,
+      expense: (user.expense || 0) + amount
+    };
+    context.updateUser(updatedUser);
+    syncCurrentUser(updatedUser);
+    return updatedUser;
+  };
+
+  return {
+    ...context,
+    currentUser,
+    login,
+    logout,
+    updateUser,
+    changePassword,
+    changePin,
+    topup,
+    transfer,
+    authLoading,
+    authError,
+  };
+};
     }
     if (amount <= 0) {
       throw new Error('Transfer amount must be positive');

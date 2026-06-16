@@ -270,7 +270,7 @@ export default function EditProfile() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#4a6cf7] to-[#2d46c0]">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-[#4a6cf7] to-[#2d46c0]">
         <div className="text-white text-xl font-semibold">Loading...</div>
       </div>
     );
