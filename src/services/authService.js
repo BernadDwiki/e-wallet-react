@@ -59,9 +59,9 @@ export const logoutUser = async () => {
   }
 };
 
-export const setPin = async (pin) => {
+export const createPin = async (pin) => {
   try {
-    const response = await api.post("/user/set-pin", { pin });
+    const response = await api.post("/user/create-pin", { pin });
 
     return {
       success: true,
@@ -80,7 +80,7 @@ export const setPin = async (pin) => {
 
 export const changePin = async ({ currentPin, newPin }) => {
   try {
-    const response = await api.put("/user/edit-pin", {
+    const response = await api.put("/user/update-pin", {
       current_pin: currentPin,
       new_pin: newPin,
     });

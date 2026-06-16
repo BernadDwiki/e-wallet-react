@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { setPin } from "../services/authService";
+import { createPin } from "../services/authService";
 import Modal from "../components/Modal";
 
 export default function EnterPin() {
@@ -55,7 +55,7 @@ export default function EnterPin() {
     setLoading(true);
     setError("");
 
-    const result = await setPin(pin);
+    const result = await createPin(pin);
     setLoading(false);
 
     if (result.success) {
