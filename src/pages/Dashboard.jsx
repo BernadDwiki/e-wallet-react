@@ -18,13 +18,12 @@ export default function Dashboard() {
     expense: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [chartData, setChartData] = useState([]);
-  const [chartLoading, setChartLoading] = useState(true);
+  const [chart, setChart] = useState({ data: [], loading: true });
   const [days, setDays] = useState(7);
   const [flow, setFlow] = useState("both");
 
   const fetchTransactionReport = async (selectedDays = days, selectedFlow = flow) => {
-    setChartLoading(true);
+    setChart(prev => ({ ...prev, loading: true }));
 
     const result = await getTransactionReport(selectedDays, selectedFlow);
 
@@ -56,18 +55,19 @@ export default function Dashboard() {
         }
       });
 
-      setChartData(
-        Object.values(groupedData)
+      setChart({
+        data: Object.values(groupedData)
           .sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate))
           .map((item) => ({
             rawDate: item.rawDate,
             income: item.income,
             expense: item.expense,
-          }))
-      );
+          })),
+        loading: false,
+      });
+    } else {
+      setChart(prev => ({ ...prev, loading: false }));
     }
-
-    setChartLoading(false);
   };
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function Dashboard() {
         <Topbar currentUser={currentUser} />
 
         <div
-          className="grid grid-cols-1 md:grid-cols-[196px_1fr] min-h-[calc(100vh-64px)] mt-[64px]"
+          className="grid grid-cols-1 md:grid-cols-[196px_1fr] min-h-[calc(100vh-64px)] mt-16"
         >
           {/* Sidebar */}
           <div className="hidden md:block">
@@ -127,8 +127,8 @@ export default function Dashboard() {
             {/* Chart — col 1 row 3 */}
             <div className="lg:col-start-1 lg:row-start-3">
               <ChartCard
-                data={chartData}
-                loading={chartLoading}
+                data={chart.data}
+                loading={chart.loading}
                 days={days}
                 setDays={setDays}
                 flow={flow}

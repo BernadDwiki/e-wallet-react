@@ -167,7 +167,7 @@ export default function ChartCard({ data = [], loading = false, days, setDays, f
           </select>
         </div>
       </div>
-      <div className="relative w-full h-[450px]">
+      <div className="relative w-full h-112.5">
         {loading ? (
           <div className="flex h-full items-center justify-center text-gray-500">Loading chart...</div>
         ) : (
